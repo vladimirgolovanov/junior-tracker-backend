@@ -1,0 +1,77 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+    name: junior-tracker-backend
+    namespace: junior-tracker
+spec:
+    replicas: 1
+    selector:
+        matchLabels:
+            app: junior-tracker-backend
+    template:
+        metadata:
+            labels:
+                app: junior-tracker-backend
+        spec:
+            securityContext:
+                fsGroup: 82
+            imagePullSecrets:
+                - name: ghcr-secret
+            containers:
+                - name: junior-tracker-backend
+                  image: ghcr.io/vladimirgolovanov/junior-tracker-backend/junior-tracker-backend:latest
+                  imagePullPolicy: Always
+                  envFrom:
+                      - secretRef:
+                            name: junior-tracker-backend-env
+                  ports:
+                      - containerPort: 50087
+                    # JWT keys are not needed yet: this service does not authenticate
+                    # requests, it is reachable only through the FastAPI proxy.
+                    # To enable them later, uncomment the mount below and the matching
+                    # volume, and create the secret on the server:
+                    #   kubectl create secret generic oauth-keys \
+                    #     --from-file=private.pem --from-file=public.pem \
+                    #     -n junior-tracker
+                    # volumeMounts:
+                    #   - name: oauth-keys
+                    #     mountPath: /var/www/html/config/jwt
+                    #     readOnly: true
+            # volumes:
+            #   - name: oauth-keys
+            #     secret:
+            #       secretName: oauth-keys
+            #       defaultMode: 0640
+---
+apiVersion: v1
+kind: Service
+metadata:
+    name: junior-tracker-backend
+    namespace: junior-tracker
+spec:
+    type: ClusterIP
+    selector:
+        app: junior-tracker-backend
+    ports:
+        - port: 50087
+          targetPort: 50087
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+    name: junior-tracker-backend-from-api-only
+    namespace: junior-tracker
+spec:
+    podSelector:
+        matchLabels:
+            app: junior-tracker-backend
+    policyTypes:
+        - Ingress
+    ingress:
+        - from:
+              - podSelector:
+                    matchLabels:
+                        app: junior-tracker-api
+          ports:
+              - protocol: TCP
+                port: 50087

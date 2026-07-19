@@ -21,3 +21,9 @@ services:
 
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones
+    App\Domain\Child\Repository\ChildRepositoryInterface:
+        alias: App\Infrastructure\Persistence\Doctrine\DoctrineChildRepository
+    App\Domain\Event\Repository\EventTypeRepositoryInterface:
+        alias: App\Infrastructure\Persistence\Doctrine\DoctrineEventTypeRepository
+    App\Domain\Event\Repository\EventRepositoryInterface:
+        alias: App\Infrastructure\Persistence\Doctrine\DoctrineEventRepository

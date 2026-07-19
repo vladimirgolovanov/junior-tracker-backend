@@ -1,0 +1,57 @@
+name: Build and Deploy
+
+on:
+    push:
+        branches:
+            - main
+
+jobs:
+    build:
+        runs-on: ubuntu-latest
+        permissions:
+            packages: write
+            contents: read
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v4
+
+            - name: Log in to GHCR
+              uses: docker/login-action@v3
+              with:
+                  registry: ghcr.io
+                  username: ${{ github.actor }}
+                  password: ${{ secrets.GITHUB_TOKEN }}
+
+            - name: Build and push
+              run: |
+                  docker build -f docker/Dockerfile -t ghcr.io/vladimirgolovanov/junior-tracker-backend/junior-tracker-backend:latest .
+                  docker push ghcr.io/vladimirgolovanov/junior-tracker-backend/junior-tracker-backend:latest
+
+    deploy:
+        runs-on: ubuntu-latest
+        needs: build
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v4
+
+            - name: Setup SSH key
+              run: |
+                  mkdir -p ~/.ssh
+                  echo "${{ secrets.SERVER_SSH_KEY }}" > ~/.ssh/id_rsa
+                  chmod 600 ~/.ssh/id_rsa
+                  ssh-keyscan -H ${{ secrets.SERVER_IP }} >> ~/.ssh/known_hosts
+
+            - name: Copy manifest to server
+              run: |
+                  scp -i ~/.ssh/id_rsa k8s/deployment.yaml ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }}:/projects/junior-tracker-backend/deployment.yaml
+
+            - name: Deploy on server
+              run: |
+                  ssh -i ~/.ssh/id_rsa ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} << 'EOF'
+                    kubectl create secret generic junior-tracker-backend-env \
+                      --from-env-file=/projects/junior-tracker-backend/.env \
+                      -n junior-tracker \
+                      --dry-run=client -o yaml | kubectl apply -f -
+                    kubectl apply -f /projects/junior-tracker-backend/deployment.yaml
+                    kubectl rollout restart deployment/junior-tracker-backend -n junior-tracker
+                  EOF
