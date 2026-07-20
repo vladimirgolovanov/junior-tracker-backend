@@ -34,6 +34,10 @@ final class SleepSummaryController
             throw new BadRequestHttpException('"to" must not be earlier than "from".');
         }
 
+        if ($from->diff($to)->days >= count(DaySummaryMapper::DAY_KEYS)) {
+            throw new BadRequestHttpException('Date range must not exceed 3 days.');
+        }
+
         $summaries = $this->getSleepSummary->forRange(
             childId: $childId,
             firstDay: $from,
@@ -41,7 +45,7 @@ final class SleepSummaryController
             now: new \DateTimeImmutable('now'),
         );
 
-        return new JsonResponse(array_map($this->mapper->toArray(...), $summaries));
+        return new JsonResponse($this->mapper->toKeyedArray($summaries));
     }
 
     private function parseDate(?string $value, string $field): \DateTimeImmutable
