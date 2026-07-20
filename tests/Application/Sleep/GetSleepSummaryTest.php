@@ -90,6 +90,42 @@ final class GetSleepSummaryTest extends TestCase
         self::assertSame(114, $summary->nightSleepMinutes);
     }
 
+    public function testFallsBackToPreviousDayWhenCycleNotStarted(): void
+    {
+        $tz = new \DateTimeZone('Europe/Belgrade');
+
+        $events = [
+            new Event(new \DateTimeImmutable('2026-07-17 07:45', $tz), self::SLEEP_END),
+            new Event(new \DateTimeImmutable('2026-07-17 11:25', $tz), self::SLEEP_START),
+            new Event(new \DateTimeImmutable('2026-07-17 13:00', $tz), self::SLEEP_END),
+            new Event(new \DateTimeImmutable('2026-07-17 19:25', $tz), self::SLEEP_START),
+        ];
+
+        $service = new GetSleepSummary(
+            $this->eventRepository($events),
+            $this->eventTypeRepository(),
+            $this->childRepository(),
+            new CycleDayEventsIsolator(),
+            new DaySummaryBuilder(new DayPartResolver()),
+        );
+
+        $summaries = $service->forRange(
+            childId: 1,
+            firstDay: new \DateTimeImmutable('2026-07-18', $tz),
+            lastDay: new \DateTimeImmutable('2026-07-18', $tz),
+            now: new \DateTimeImmutable('2026-07-18 02:00', $tz),
+        );
+
+        self::assertCount(1, $summaries);
+
+        $summary = $summaries[0];
+
+        self::assertSame('2026-07-17 07:45', $summary->morningAwakeTime?->format('Y-m-d H:i'));
+        self::assertSame('2026-07-17 19:25', $summary->bedtime?->format('Y-m-d H:i'));
+        self::assertTrue($summary->isCurrentlyAsleep);
+        self::assertSame(395, $summary->currentSleepMinutes);
+    }
+
     /** @param Event[] $events */
     private function eventRepository(array $events): EventRepositoryInterface
     {

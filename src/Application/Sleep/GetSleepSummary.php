@@ -38,7 +38,7 @@ final readonly class GetSleepSummary
 
         $schedule = new SleepSchedule();
         $rangeType = $this->eventTypeRepository->findRangeType($childId, 'sleep_start');
-        $window = CycleWindow::forDates($firstDay, $lastDay);
+        $window = CycleWindow::forDates($firstDay->modify('-1 day'), $lastDay);
 
         $events = $this->eventRepository->findByChildAndTypes(
             $childId,
@@ -47,6 +47,11 @@ final readonly class GetSleepSummary
             $window->to,
             $timezone,
         );
+
+        if ([] === $this->isolator->isolate($events, $lastDay, $rangeType, $schedule)) {
+            $firstDay = $firstDay->modify('-1 day');
+            $lastDay = $lastDay->modify('-1 day');
+        }
 
         $summaries = [];
         $day = $firstDay;
@@ -58,7 +63,7 @@ final readonly class GetSleepSummary
                 $dayEvents,
                 $rangeType,
                 $schedule,
-                $this->currentTimeFor($day, $now),
+                $this->currentTimeFor($day, $lastDay, $now),
             );
 
             $day = $day->modify('+1 day');
@@ -69,8 +74,13 @@ final readonly class GetSleepSummary
 
     private function currentTimeFor(
         \DateTimeImmutable $day,
+        \DateTimeImmutable $lastDay,
         \DateTimeImmutable $now,
     ): ?\DateTimeImmutable {
-        return $day->format('Y-m-d') === $now->format('Y-m-d') ? $now : null;
+        if ($day->format('Y-m-d') !== $lastDay->format('Y-m-d')) {
+            return null;
+        }
+
+        return $now < $day->modify('+2 day') ? $now : null;
     }
 }
