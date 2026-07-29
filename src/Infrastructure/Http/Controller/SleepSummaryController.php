@@ -20,8 +20,8 @@ final class SleepSummaryController
     }
 
     #[Route(
-        '/api/v2/children/{childId}/sleep-summaries',
-        name: 'api_v2_sleep_summaries',
+        '/internal/children/{childId}/sleep-summaries',
+        name: 'internal_sleep_summaries',
         requirements: ['childId' => '\d+'],
         methods: ['GET'],
     )]

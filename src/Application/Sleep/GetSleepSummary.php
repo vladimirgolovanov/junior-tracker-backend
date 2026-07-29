@@ -35,6 +35,8 @@ final readonly class GetSleepSummary
     ): array {
         $timezone = $this->childRepository->findTimezone($childId);
         $now = $now->setTimezone($timezone);
+        $firstDay = new \DateTimeImmutable($firstDay->format('Y-m-d'), $timezone);
+        $lastDay = new \DateTimeImmutable($lastDay->format('Y-m-d'), $timezone);
 
         $schedule = new SleepSchedule();
         $rangeType = $this->eventTypeRepository->findRangeType($childId, 'sleep_start');

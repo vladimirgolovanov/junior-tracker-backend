@@ -95,5 +95,21 @@ final class CycleDayEventsIsolatorTest extends TestCase
                 [self::SLEEP_END, '2026-05-05 07:00'],
             ],
         ];
+        yield 'новый день, только проснулся' => [
+            'events' => [
+                new Event(new \DateTimeImmutable('2026-05-04 00:50'), self::SLEEP_START),
+                new Event(new \DateTimeImmutable('2026-05-04 06:30'), self::SLEEP_END),
+                new Event(new \DateTimeImmutable('2026-05-04 08:45'), self::SLEEP_START),
+                new Event(new \DateTimeImmutable('2026-05-04 09:55'), self::SLEEP_END),
+                new Event(new \DateTimeImmutable('2026-05-04 13:40'), self::SLEEP_START),
+                new Event(new \DateTimeImmutable('2026-05-04 14:50'), self::SLEEP_END),
+                new Event(new \DateTimeImmutable('2026-05-04 19:35'), self::SLEEP_START),
+                new Event(new \DateTimeImmutable('2026-05-05 07:00'), self::SLEEP_END),
+            ],
+            'date' => new \DateTimeImmutable('2026-05-05'),
+            'expected' => [
+                [self::SLEEP_END, '2026-05-05 07:00'],
+            ],
+        ];
     }
 }

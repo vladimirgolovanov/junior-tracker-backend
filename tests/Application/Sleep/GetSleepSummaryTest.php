@@ -13,6 +13,7 @@ use App\Domain\Event\ValueObject\RangeEventType;
 use App\Domain\Sleep\Service\CycleDayEventsIsolator;
 use App\Domain\Sleep\Service\DayPartResolver;
 use App\Domain\Sleep\Service\DaySummaryBuilder;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 
 final class GetSleepSummaryTest extends TestCase
@@ -20,16 +21,19 @@ final class GetSleepSummaryTest extends TestCase
     private const SLEEP_START = 1;
     private const SLEEP_END = 2;
 
-    public function testForRangeSingleDay(): void
-    {
-        $events = [
-            new Event(new \DateTimeImmutable('2026-07-13 06:30'), self::SLEEP_END),
-            new Event(new \DateTimeImmutable('2026-07-13 12:00'), self::SLEEP_START),
-            new Event(new \DateTimeImmutable('2026-07-13 14:30'), self::SLEEP_END),
-            new Event(new \DateTimeImmutable('2026-07-13 21:00'), self::SLEEP_START),
-            new Event(new \DateTimeImmutable('2026-07-14 07:00'), self::SLEEP_END),
-        ];
-
+    /**
+     * @param Event[]              $events
+     * @param array<string, mixed> $expected
+     */
+    #[DataProvider('summaryProvider')]
+    public function testForRange(
+        array $events,
+        int $childId,
+        \DateTimeImmutable $firstDay,
+        \DateTimeImmutable $lastDay,
+        \DateTimeImmutable $now,
+        array $expected,
+    ): void {
         $service = new GetSleepSummary(
             $this->eventRepository($events),
             $this->eventTypeRepository(),
@@ -38,92 +42,111 @@ final class GetSleepSummaryTest extends TestCase
             new DaySummaryBuilder(new DayPartResolver()),
         );
 
-
         $summaries = $service->forRange(
-            childId: 42,
-            firstDay: new \DateTimeImmutable('2026-07-13'),
-            lastDay: new \DateTimeImmutable('2026-07-13'),
-            now: new \DateTimeImmutable('2026-07-15 10:00'),
+            childId: $childId,
+            firstDay: $firstDay,
+            lastDay: $lastDay,
+            now: $now,
         );
 
         self::assertCount(1, $summaries);
-
         $summary = $summaries[0];
-        self::assertSame(750, $summary->totalSleepMinutes);
-        self::assertSame(150, $summary->daySleepMinutes);
-        self::assertSame(600, $summary->nightSleepMinutes);
-        self::assertSame('2026-07-13 21:00', $summary->bedtime->format('Y-m-d H:i'));
-        self::assertSame('2026-07-13 06:30', $summary->morningAwakeTime->format('Y-m-d H:i'));
-        self::assertFalse($summary->isCurrentlyAsleep);
+
+        $actual = [
+            'totalSleepMinutes' => $summary->totalSleepMinutes,
+            'daySleepMinutes' => $summary->daySleepMinutes,
+            'nightSleepMinutes' => $summary->nightSleepMinutes,
+            'currentSleepMinutes' => $summary->currentSleepMinutes,
+            'isCurrentlyAsleep' => $summary->isCurrentlyAsleep,
+            'bedtime' => $summary->bedtime?->format('Y-m-d H:i'),
+            'morningAwakeTime' => $summary->morningAwakeTime?->format('Y-m-d H:i'),
+        ];
+
+        foreach ($expected as $key => $value) {
+            self::assertSame($value, $actual[$key], $key);
+        }
     }
 
-    public function testForRangeCurrentDayStillAsleep(): void
+    public static function summaryProvider(): iterable
     {
         $tz = new \DateTimeZone('Europe/Belgrade');
 
-        $events = [
-            new Event(new \DateTimeImmutable('2026-07-17 07:45', $tz), self::SLEEP_END),
-            new Event(new \DateTimeImmutable('2026-07-17 11:25', $tz), self::SLEEP_START),
-            new Event(new \DateTimeImmutable('2026-07-17 13:00', $tz), self::SLEEP_END),
-            new Event(new \DateTimeImmutable('2026-07-17 19:25', $tz), self::SLEEP_START),
+        yield 'диапазон в один день' => [
+            'events' => [
+                new Event(new \DateTimeImmutable('2026-07-13 06:30'), self::SLEEP_END),
+                new Event(new \DateTimeImmutable('2026-07-13 12:00'), self::SLEEP_START),
+                new Event(new \DateTimeImmutable('2026-07-13 14:30'), self::SLEEP_END),
+                new Event(new \DateTimeImmutable('2026-07-13 21:00'), self::SLEEP_START),
+                new Event(new \DateTimeImmutable('2026-07-14 07:00'), self::SLEEP_END),
+            ],
+            'childId' => 42,
+            'firstDay' => new \DateTimeImmutable('2026-07-13'),
+            'lastDay' => new \DateTimeImmutable('2026-07-13'),
+            'now' => new \DateTimeImmutable('2026-07-15 10:00'),
+            'expected' => [
+                'totalSleepMinutes' => 750,
+                'daySleepMinutes' => 150,
+                'nightSleepMinutes' => 600,
+                'bedtime' => '2026-07-13 21:00',
+                'morningAwakeTime' => '2026-07-13 06:30',
+                'isCurrentlyAsleep' => false,
+            ],
         ];
 
-        $service = new GetSleepSummary(
-            $this->eventRepository($events),
-            $this->eventTypeRepository(),
-            $this->childRepository(),
-            new CycleDayEventsIsolator(),
-            new DaySummaryBuilder(new DayPartResolver()),
-        );
-
-        $summaries = $service->forRange(
-            childId: 1,
-            firstDay: new \DateTimeImmutable('2026-07-17'),
-            lastDay: new \DateTimeImmutable('2026-07-17'),
-            now: new \DateTimeImmutable('2026-07-17 21:19', $tz),
-        );
-
-        $summary = $summaries[0];
-
-        self::assertTrue($summary->isCurrentlyAsleep);
-        self::assertSame('2026-07-17 19:25', $summary->bedtime?->format('Y-m-d H:i'));
-        self::assertSame(114, $summary->nightSleepMinutes);
-    }
-
-    public function testFallsBackToPreviousDayWhenCycleNotStarted(): void
-    {
-        $tz = new \DateTimeZone('Europe/Belgrade');
-
-        $events = [
-            new Event(new \DateTimeImmutable('2026-07-17 07:45', $tz), self::SLEEP_END),
-            new Event(new \DateTimeImmutable('2026-07-17 11:25', $tz), self::SLEEP_START),
-            new Event(new \DateTimeImmutable('2026-07-17 13:00', $tz), self::SLEEP_END),
-            new Event(new \DateTimeImmutable('2026-07-17 19:25', $tz), self::SLEEP_START),
+        yield 'текущий день, ещё спит' => [
+            'events' => [
+                new Event(new \DateTimeImmutable('2026-07-17 07:45', $tz), self::SLEEP_END),
+                new Event(new \DateTimeImmutable('2026-07-17 11:25', $tz), self::SLEEP_START),
+                new Event(new \DateTimeImmutable('2026-07-17 13:00', $tz), self::SLEEP_END),
+                new Event(new \DateTimeImmutable('2026-07-17 19:25', $tz), self::SLEEP_START),
+            ],
+            'childId' => 1,
+            'firstDay' => new \DateTimeImmutable('2026-07-17'),
+            'lastDay' => new \DateTimeImmutable('2026-07-17'),
+            'now' => new \DateTimeImmutable('2026-07-17 21:19', $tz),
+            'expected' => [
+                'isCurrentlyAsleep' => true,
+                'bedtime' => '2026-07-17 19:25',
+                'nightSleepMinutes' => 114,
+            ],
         ];
 
-        $service = new GetSleepSummary(
-            $this->eventRepository($events),
-            $this->eventTypeRepository(),
-            $this->childRepository(),
-            new CycleDayEventsIsolator(),
-            new DaySummaryBuilder(new DayPartResolver()),
-        );
+        yield 'новый день, только проснулся' => [
+            'events' => [
+                new Event(new \DateTimeImmutable('2026-07-17 07:45', $tz), self::SLEEP_END),
+                new Event(new \DateTimeImmutable('2026-07-17 11:25', $tz), self::SLEEP_START),
+                new Event(new \DateTimeImmutable('2026-07-17 13:00', $tz), self::SLEEP_END),
+                new Event(new \DateTimeImmutable('2026-07-17 19:25', $tz), self::SLEEP_START),
+                new Event(new \DateTimeImmutable('2026-07-18 07:00', $tz), self::SLEEP_END),
+            ],
+            'childId' => 1,
+            'firstDay' => new \DateTimeImmutable('2026-07-18'),
+            'lastDay' => new \DateTimeImmutable('2026-07-18'),
+            'now' => new \DateTimeImmutable('2026-07-18 08:00', $tz),
+            'expected' => [
+                'morningAwakeTime' => '2026-07-18 07:00',
+                'isCurrentlyAsleep' => false,
+            ],
+        ];
 
-        $summaries = $service->forRange(
-            childId: 1,
-            firstDay: new \DateTimeImmutable('2026-07-18', $tz),
-            lastDay: new \DateTimeImmutable('2026-07-18', $tz),
-            now: new \DateTimeImmutable('2026-07-18 02:00', $tz),
-        );
-
-        self::assertCount(1, $summaries);
-
-        $summary = $summaries[0];
-
-        self::assertSame('2026-07-17 07:45', $summary->morningAwakeTime?->format('Y-m-d H:i'));
-        self::assertSame('2026-07-17 19:25', $summary->bedtime?->format('Y-m-d H:i'));
-        self::assertTrue($summary->isCurrentlyAsleep);
-        self::assertSame(395, $summary->currentSleepMinutes);
+        yield 'откат на предыдущий день' => [
+            'events' => [
+                new Event(new \DateTimeImmutable('2026-07-17 07:45', $tz), self::SLEEP_END),
+                new Event(new \DateTimeImmutable('2026-07-17 11:25', $tz), self::SLEEP_START),
+                new Event(new \DateTimeImmutable('2026-07-17 13:00', $tz), self::SLEEP_END),
+                new Event(new \DateTimeImmutable('2026-07-17 19:25', $tz), self::SLEEP_START),
+            ],
+            'childId' => 1,
+            'firstDay' => new \DateTimeImmutable('2026-07-18', $tz),
+            'lastDay' => new \DateTimeImmutable('2026-07-18', $tz),
+            'now' => new \DateTimeImmutable('2026-07-18 02:00', $tz),
+            'expected' => [
+                'morningAwakeTime' => '2026-07-17 07:45',
+                'bedtime' => '2026-07-17 19:25',
+                'isCurrentlyAsleep' => true,
+                'currentSleepMinutes' => 395,
+            ],
+        ];
     }
 
     /** @param Event[] $events */

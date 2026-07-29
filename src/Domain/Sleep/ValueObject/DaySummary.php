@@ -33,7 +33,7 @@ final readonly class DaySummary
         $sleep = [DayPart::Day->value => 0, DayPart::Night->value => 0];
         $awake = [DayPart::Day->value => 0, DayPart::Night->value => 0];
 
-        $first = $segments[array_key_first($segments)] ?? null;
+        $first = [] === $segments ? null : $segments[array_key_first($segments)];
 
         $morningAwakeTime = null !== $first && SleepState::Awake === $first->state
             ? $first->start

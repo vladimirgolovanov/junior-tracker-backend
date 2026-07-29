@@ -34,6 +34,25 @@ final class DaySummaryBuilderTest extends TestCase
 
     public static function daySummaryProvider(): iterable
     {
+        yield 'пустой день' => [
+            'events' => [],
+            'currentTime' => null,
+            'expected' => [
+                'segments' => [],
+                'bedtime' => null,
+                'morningAwakeTime' => null,
+                'totalSleepMinutes' => 0,
+                'daySleepMinutes' => 0,
+                'nightSleepMinutes' => 0,
+                'totalAwakeMinutes' => 0,
+                'dayAwakeMinutes' => 0,
+                'nightAwakeMinutes' => 0,
+                'currentSleepMinutes' => 0,
+                'currentAwakeMinutes' => 0,
+                'isCurrentlyAsleep' => false,
+                'cycleLengthMinutes' => 0,
+            ],
+        ];
         yield 'дневной сон и ночной сон' => [
             'events' => [
                 new Event(new \DateTimeImmutable('2026-07-13 06:30'), self::SLEEP_END),

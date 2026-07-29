@@ -27,3 +27,16 @@ services:
         alias: App\Infrastructure\Persistence\Doctrine\DoctrineEventTypeRepository
     App\Domain\Event\Repository\EventRepositoryInterface:
         alias: App\Infrastructure\Persistence\Doctrine\DoctrineEventRepository
+    App\Domain\Registration\Repository\RegistrationRepositoryInterface:
+        alias: App\Infrastructure\Persistence\Doctrine\DoctrineRegistrationRepository
+    App\Domain\ChildInvite\Repository\ChildInviteRepositoryInterface:
+        alias: App\Infrastructure\Persistence\Doctrine\DoctrineChildInviteRepository
+    App\Domain\ChildInvite\Service\InviteCodeGeneratorInterface:
+        alias: App\Infrastructure\Security\RandomInviteCodeGenerator
+    App\Domain\User\Service\PasswordHasherInterface:
+        alias: App\Infrastructure\Security\Argon2PasswordHasher
+
+    # TTL приглашения — скаляр, автовайрить нечего, задаём явно из env.
+    App\Domain\ChildInvite\Service\ChildInviteFactory:
+        arguments:
+            $ttlSeconds: '%env(int:CHILD_INVITE_TTL_SECONDS)%'

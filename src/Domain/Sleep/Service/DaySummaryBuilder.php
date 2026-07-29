@@ -42,6 +42,10 @@ final class DaySummaryBuilder
         SleepSchedule       $schedule,
         ?\DateTimeImmutable $currentTime,
     ): array {
+        if ([] === $events) {
+            return [];
+        }
+
         $segments = [];
         $napNumber = 0;
         $count = count($events);
