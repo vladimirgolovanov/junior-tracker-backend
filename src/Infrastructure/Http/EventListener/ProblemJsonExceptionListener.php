@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Infrastructure\Http\EventListener;
 
+use App\Domain\Auth\Exception\AccessDenied;
+use App\Domain\Auth\Exception\Unauthenticated;
 use App\Domain\ChildInvite\Exception\InviteAlreadyAccepted;
 use App\Domain\ChildInvite\Exception\InviteExpired;
 use App\Domain\ChildInvite\Exception\InviteNotFound;
@@ -14,6 +16,7 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Event\ExceptionEvent;
 use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
+use Symfony\Component\Validator\Exception\ValidationFailedException;
 
 /**
  * Отдаёт ошибки публичного контура в формате problem+json (RFC 7807).
@@ -45,6 +48,15 @@ final readonly class ProblemJsonExceptionListener
                 'Validation failed',
                 ['errors' => [$exception->field => $exception->getMessage()]],
             ),
+            $exception instanceof Unauthenticated => $this->problem(
+                Response::HTTP_UNAUTHORIZED,
+                'Unauthenticated',
+                headers: ['WWW-Authenticate' => 'Bearer'],
+            ),
+            $exception instanceof AccessDenied => $this->problem(
+                Response::HTTP_FORBIDDEN,
+                'Access denied',
+            ),
             $exception instanceof EmailAlreadyRegistered => $this->problem(
                 Response::HTTP_CONFLICT,
                 'Email already registered',
@@ -61,6 +73,12 @@ final readonly class ProblemJsonExceptionListener
                 Response::HTTP_CONFLICT,
                 'Invite already accepted',
             ),
+            // MapQueryString/MapRequestPayload оборачивают провал валидации
+            // в HttpException, а причину кладут в previous.
+            $exception->getPrevious() instanceof ValidationFailedException => $this->validationProblem(
+                $exception->getPrevious(),
+                $exception instanceof HttpExceptionInterface ? $exception->getStatusCode() : Response::HTTP_UNPROCESSABLE_ENTITY,
+            ),
             $exception instanceof HttpExceptionInterface => $this->problem(
                 $exception->getStatusCode(),
                 Response::$statusTexts[$exception->getStatusCode()] ?? 'Error',
@@ -70,6 +88,17 @@ final readonly class ProblemJsonExceptionListener
             // стандартный обработчик, чтобы не терять трейс в dev.
             default => null,
         };
+    }
+
+    private function validationProblem(ValidationFailedException $exception, int $status): JsonResponse
+    {
+        $errors = [];
+
+        foreach ($exception->getViolations() as $violation) {
+            $errors[$violation->getPropertyPath()] = (string) $violation->getMessage();
+        }
+
+        return $this->problem($status, 'Validation failed', ['errors' => $errors]);
     }
 
     /**

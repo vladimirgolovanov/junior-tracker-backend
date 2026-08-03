@@ -5,15 +5,48 @@ declare(strict_types=1);
 namespace App\Infrastructure\Persistence\Doctrine;
 
 use App\Domain\Event\Exception\EventTypeNotFound;
+use App\Domain\Event\Repository\EventTypeReadRepositoryInterface;
 use App\Domain\Event\Repository\EventTypeRepositoryInterface;
+use App\Domain\Event\ValueObject\EventType;
 use App\Domain\Event\ValueObject\RangeEventType;
 use Doctrine\DBAL\Connection;
 
-final readonly class DoctrineEventTypeRepository implements EventTypeRepositoryInterface
+final readonly class DoctrineEventTypeRepository implements EventTypeRepositoryInterface, EventTypeReadRepositoryInterface
 {
     public function __construct(
         private Connection $connection,
     ) {
+    }
+
+    public function listByChild(int $childId): array
+    {
+        // to_json(keywords) отдаёт корректный JSON-массив (или null),
+        // без ручного разбора Postgres-литерала text[] вида {a,b}.
+        $rows = $this->connection->fetchAllAssociative(
+            'SELECT id, child_id, name, format, color, parent_id, to_json(keywords) AS keywords
+             FROM event_types
+             WHERE child_id = :childId
+             ORDER BY id',
+            ['childId' => $childId],
+        );
+
+        return array_map(
+            static function (array $row): EventType {
+                /** @var string[]|null $keywords */
+                $keywords = null === $row['keywords'] ? null : json_decode($row['keywords'], true);
+
+                return new EventType(
+                    id: (int) $row['id'],
+                    childId: (int) $row['child_id'],
+                    name: $row['name'],
+                    format: $row['format'],
+                    color: $row['color'],
+                    parentId: null === $row['parent_id'] ? null : (int) $row['parent_id'],
+                    keywords: $keywords,
+                );
+            },
+            $rows,
+        );
     }
 
     public function findRangeType(int $childId, string $startName): RangeEventType

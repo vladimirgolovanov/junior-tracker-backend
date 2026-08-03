@@ -35,8 +35,21 @@ services:
         alias: App\Infrastructure\Security\RandomInviteCodeGenerator
     App\Domain\User\Service\PasswordHasherInterface:
         alias: App\Infrastructure\Security\Argon2PasswordHasher
+    App\Domain\Auth\Service\TokenValueGeneratorInterface:
+        alias: App\Infrastructure\Security\UrlSafeTokenGenerator
+    App\Domain\Auth\Repository\AccessTokenRepositoryInterface:
+        alias: App\Infrastructure\Persistence\Doctrine\DoctrineAccessTokenRepository
+    App\Domain\Child\Repository\ChildAccessRepositoryInterface:
+        alias: App\Infrastructure\Persistence\Doctrine\DoctrineChildRepository
+    App\Domain\Event\Repository\EventTypeReadRepositoryInterface:
+        alias: App\Infrastructure\Persistence\Doctrine\DoctrineEventTypeRepository
 
     # TTL приглашения — скаляр, автовайрить нечего, задаём явно из env.
     App\Domain\ChildInvite\Service\ChildInviteFactory:
         arguments:
             $ttlSeconds: '%env(int:CHILD_INVITE_TTL_SECONDS)%'
+
+    # TTL access-токена должен совпадать с lifetime_seconds в FastAPI.
+    App\Application\Auth\AuthenticateByToken:
+        arguments:
+            $ttlSeconds: '%env(int:ACCESS_TOKEN_TTL_SECONDS)%'

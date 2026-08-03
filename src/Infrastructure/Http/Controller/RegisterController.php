@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Infrastructure\Http\Controller;
 
+use App\Application\Auth\IssueAccessToken;
 use App\Application\Registration\RegisterUser;
 use App\Domain\Child\ValueObject\Timezone;
 use App\Domain\Shared\Exception\InvalidValue;
@@ -21,6 +22,7 @@ final class RegisterController
 {
     public function __construct(
         private readonly RegisterUser $registerUser,
+        private readonly IssueAccessToken $issueAccessToken,
     ) {
     }
 
@@ -48,11 +50,17 @@ final class RegisterController
                 $now,
             );
 
+        // Авто-логин: выпускаем токен отдельным шагом после коммита регистрации.
+        // Форма совпадает с ответом BearerTransport в FastAPI.
+        $accessToken = ($this->issueAccessToken)($registered->userId, $now);
+
         return new JsonResponse(
             [
                 'id' => $registered->userId,
                 'email' => $credentials->email->value,
                 'child_id' => $registered->childId,
+                'access_token' => $accessToken->value,
+                'token_type' => 'bearer',
             ],
             Response::HTTP_CREATED,
         );
