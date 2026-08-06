@@ -48,6 +48,14 @@ final class InvalidValue extends \DomainException
         return new self('password', 'Password must not be equal to the email.');
     }
 
+    public static function malformedDateTime(string $field): self
+    {
+        return new self($field, sprintf(
+            'Field "%s" must be an ISO 8601 datetime with an offset, e.g. "2026-08-03T11:40:00Z".',
+            $field,
+        ));
+    }
+
     public static function unknownTimezone(): self
     {
         return new self('timezone', 'Timezone must be a valid IANA identifier, e.g. "Europe/Moscow".');

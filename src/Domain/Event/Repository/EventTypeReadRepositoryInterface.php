@@ -12,4 +12,6 @@ interface EventTypeReadRepositoryInterface
      * @return EventType[] упорядоченные по id
      */
     public function listByChild(int $childId): array;
+
+    public function findById(int $id): ?EventType;
 }

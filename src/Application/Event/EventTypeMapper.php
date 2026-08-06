@@ -23,10 +23,12 @@ final class EventTypeMapper
     /**
      * @return array<string, mixed>
      */
-    private function one(EventType $eventType): array
+    public function one(EventType $eventType): array
     {
         // show_in_filters / volume_input / describe_input — не колонки,
         // а производные от format (правило перенесено из FastAPI).
+        // Рядом с ними едут show_in_last_events / show_in_quick_actions —
+        // это, наоборот, настоящие пользовательские настройки из БД.
         return [
             'id' => $eventType->id,
             'format' => $eventType->format,
@@ -38,6 +40,8 @@ final class EventTypeMapper
             'show_in_filters' => !in_array($eventType->format, self::RANGE_FORMATS, true),
             'volume_input' => 'metric' === $eventType->format,
             'describe_input' => 'described' === $eventType->format,
+            'show_in_last_events' => $eventType->showInLastEvents,
+            'show_in_quick_actions' => $eventType->showInQuickActions,
         ];
     }
 }

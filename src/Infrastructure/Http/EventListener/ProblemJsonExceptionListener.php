@@ -9,6 +9,8 @@ use App\Domain\Auth\Exception\Unauthenticated;
 use App\Domain\ChildInvite\Exception\InviteAlreadyAccepted;
 use App\Domain\ChildInvite\Exception\InviteExpired;
 use App\Domain\ChildInvite\Exception\InviteNotFound;
+use App\Domain\Event\Exception\EventNotFound;
+use App\Domain\Event\Exception\EventTypeNotFound;
 use App\Domain\Registration\Exception\EmailAlreadyRegistered;
 use App\Domain\Shared\Exception\InvalidValue;
 use Symfony\Component\EventDispatcher\Attribute\AsEventListener;
@@ -56,6 +58,14 @@ final readonly class ProblemJsonExceptionListener
             $exception instanceof AccessDenied => $this->problem(
                 Response::HTTP_FORBIDDEN,
                 'Access denied',
+            ),
+            $exception instanceof EventTypeNotFound => $this->problem(
+                Response::HTTP_NOT_FOUND,
+                'Event type not found',
+            ),
+            $exception instanceof EventNotFound => $this->problem(
+                Response::HTTP_NOT_FOUND,
+                'Event not found',
             ),
             $exception instanceof EmailAlreadyRegistered => $this->problem(
                 Response::HTTP_CONFLICT,

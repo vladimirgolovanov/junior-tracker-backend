@@ -119,26 +119,15 @@ final readonly class DoctrineRegistrationRepository implements RegistrationRepos
         NewEventType $eventType,
         ?int $parentId,
     ): int {
+        [$keywords, $keywordParams] = KeywordsLiteral::build($eventType->keywords);
+
         $params = [
             'name' => $eventType->name,
             'childId' => $childId,
             'format' => $eventType->format,
             'color' => $eventType->color,
             'parentId' => $parentId,
-        ];
-
-        $keywords = 'NULL::text[]';
-
-        if (null !== $eventType->keywords) {
-            $placeholders = [];
-
-            foreach (array_values($eventType->keywords) as $index => $keyword) {
-                $placeholders[] = ':keyword'.$index;
-                $params['keyword'.$index] = $keyword;
-            }
-
-            $keywords = sprintf('ARRAY[%s]::text[]', implode(', ', $placeholders));
-        }
+        ] + $keywordParams;
 
         return (int) $connection->fetchOne(
             sprintf(
