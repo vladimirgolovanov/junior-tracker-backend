@@ -10,13 +10,13 @@ final readonly class ChildStatus
 {
     /**
      * @param list<EventDetails>  $lastEvents  от свежих к старым
-     * @param list<QuickAction> $quickActions
+     * @param list<Action> $actions
      */
     public function __construct(
         public int $childId,
         public CurrentSleepState $sleep,
         public array $lastEvents,
-        public array $quickActions,
+        public array $actions,
     ) {
     }
 }

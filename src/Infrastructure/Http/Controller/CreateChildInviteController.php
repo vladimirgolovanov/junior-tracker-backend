@@ -5,15 +5,16 @@ declare(strict_types=1);
 namespace App\Infrastructure\Http\Controller;
 
 use App\Application\ChildInvite\CreateChildInvite;
+use App\Infrastructure\Http\Attribute\Authenticated;
+use App\Infrastructure\Http\EventListener\AuthenticationListener;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\Routing\Attribute\Route;
 
 /**
- * Внутренний контур: владение ребёнком и личность inviter уже проверены
- * доверенным источником выше по стеку, поэтому авторизации здесь нет.
+ * Публичный контур: inviter — это аутентифицированный пользователь из токена,
+ * а его доступ к ребёнку проверяется в CreateChildInvite.
  */
 final class CreateChildInviteController
 {
@@ -23,16 +24,19 @@ final class CreateChildInviteController
     }
 
     #[Route(
-        '/internal/children/{childId}/invites',
-        name: 'internal_child_invites_create',
+        '/api/v2/children/{childId}/invites',
+        name: 'api_v2_child_invites_create',
         requirements: ['childId' => '\d+'],
         methods: ['POST'],
     )]
+    #[Authenticated]
     public function __invoke(int $childId, Request $request): JsonResponse
     {
+        $inviterId = $request->attributes->getInt(AuthenticationListener::USER_ID_ATTRIBUTE);
+
         $invite = $this->createChildInvite->handle(
             $childId,
-            $this->inviterId($request),
+            $inviterId,
             new \DateTimeImmutable('now'),
         );
 
@@ -43,24 +47,5 @@ final class CreateChildInviteController
             ],
             Response::HTTP_CREATED,
         );
-    }
-
-    private function inviterId(Request $request): int
-    {
-        try {
-            $payload = $request->toArray();
-        } catch (\Throwable) {
-            throw new BadRequestHttpException('Request body must be a JSON object.');
-        }
-
-        if (!array_key_exists('inviter_id', $payload)) {
-            throw new BadRequestHttpException('Field "inviter_id" is required.');
-        }
-
-        if (!is_int($payload['inviter_id'])) {
-            throw new BadRequestHttpException('Field "inviter_id" must be an integer.');
-        }
-
-        return $payload['inviter_id'];
     }
 }

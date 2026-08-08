@@ -127,16 +127,23 @@ final readonly class DoctrineRegistrationRepository implements RegistrationRepos
             'format' => $eventType->format,
             'color' => $eventType->color,
             'parentId' => $parentId,
+            'showInLastEvents' => $eventType->showInLastEvents,
+            'showInQuickActions' => $eventType->showInQuickActions,
         ] + $keywordParams;
 
         return (int) $connection->fetchOne(
             sprintf(
-                'INSERT INTO event_types (name, child_id, keywords, format, color, parent_id)
-                 VALUES (:name, :childId, %s, :format, :color, :parentId)
+                'INSERT INTO event_types
+                     (name, child_id, keywords, format, color, parent_id, show_in_last_events, show_in_quick_actions)
+                 VALUES (:name, :childId, %s, :format, :color, :parentId, :showInLastEvents, :showInQuickActions)
                  RETURNING id',
                 $keywords,
             ),
             $params,
+            [
+                'showInLastEvents' => ParameterType::BOOLEAN,
+                'showInQuickActions' => ParameterType::BOOLEAN,
+            ],
         );
     }
 }

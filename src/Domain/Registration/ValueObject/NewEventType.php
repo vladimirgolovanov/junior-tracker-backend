@@ -15,6 +15,8 @@ final readonly class NewEventType
         public string $name,
         public ?array $keywords,
         public string $format,
+        public bool $showInLastEvents,
+        public bool $showInQuickActions,
         public ?string $color = null,
         public ?self $end = null,
     ) {

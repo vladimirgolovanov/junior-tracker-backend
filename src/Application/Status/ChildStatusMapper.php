@@ -6,7 +6,7 @@ namespace App\Application\Status;
 
 use App\Domain\Event\ValueObject\EventDetails;
 use App\Domain\Status\ValueObject\ChildStatus;
-use App\Domain\Status\ValueObject\QuickAction;
+use App\Domain\Status\ValueObject\Action;
 
 final class ChildStatusMapper
 {
@@ -21,7 +21,7 @@ final class ChildStatusMapper
             'current_sleep_minutes' => $status->sleep->sleepMinutes,
             'current_awake_minutes' => $status->sleep->awakeMinutes,
             'last_events' => array_map($this->lastEventToArray(...), $status->lastEvents),
-            'quick_actions' => array_map($this->quickActionToArray(...), $status->quickActions),
+            'actions' => array_map($this->actionToArray(...), $status->actions),
         ];
     }
 
@@ -42,11 +42,12 @@ final class ChildStatusMapper
     /**
      * @return array<string, mixed>
      */
-    private function quickActionToArray(QuickAction $action): array
+    private function actionToArray(Action $action): array
     {
         $result = [
             'event_type_id' => $action->eventTypeId,
             'focus' => $action->focus,
+            'show_in_quick_actions' => $action->showInQuickActions,
         ];
 
         // volumes есть только у типов с объёмом — у остальных ключа быть не должно.

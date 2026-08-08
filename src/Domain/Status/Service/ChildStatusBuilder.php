@@ -8,7 +8,7 @@ use App\Domain\Event\ValueObject\EventDetails;
 use App\Domain\Event\ValueObject\EventType;
 use App\Domain\Status\ValueObject\ChildStatus;
 use App\Domain\Status\ValueObject\CurrentSleepState;
-use App\Domain\Status\ValueObject\QuickAction;
+use App\Domain\Status\ValueObject\Action;
 
 final readonly class ChildStatusBuilder
 {
@@ -29,8 +29,8 @@ final readonly class ChildStatusBuilder
             childId: $childId,
             sleep: $this->currentSleepState($eventTypes, $lastEvents, $now),
             lastEvents: $this->visibleLastEvents($eventTypes, $lastEvents),
-            quickActions: $this->withVolumeHints(
-                $this->buildQuickActions($eventTypes, $lastEvents, $pairIndex),
+            actions: $this->withVolumeHints(
+                $this->buildActions($eventTypes, $lastEvents, $pairIndex),
                 $volumesHint,
             ),
         );
@@ -68,7 +68,7 @@ final readonly class ChildStatusBuilder
         return $index;
     }
 
-    private function buildQuickActions(array $eventTypes, array $lastEvents, array $pairIndex): array
+    private function buildActions(array $eventTypes, array $lastEvents, array $pairIndex): array
     {
         $eventTypesById = [];
         foreach ($eventTypes as $eventType) {
@@ -82,7 +82,7 @@ final readonly class ChildStatusBuilder
         $actions = [];
 
         foreach ($eventTypes as $eventType) {
-            if (null !== $eventType->parentId || !$eventType->showInQuickActions) {
+            if (null !== $eventType->parentId) {
                 continue;
             }
 
@@ -95,12 +95,12 @@ final readonly class ChildStatusBuilder
                     : $eventType;
             }
 
-            $actions[] = new QuickAction($target->id, $this->focusFor($target));
+            $actions[] = new Action($target->id, $this->focusFor($target), $target->showInQuickActions);
         }
 
         usort(
             $actions,
-            static fn (QuickAction $a, QuickAction $b): int => $a->eventTypeId <=> $b->eventTypeId,
+            static fn (Action $a, Action $b): int => $a->eventTypeId <=> $b->eventTypeId,
         );
 
         return $actions;
@@ -109,8 +109,8 @@ final readonly class ChildStatusBuilder
     private function focusFor(EventType $eventType): ?string
     {
         return match ($eventType->format) {
-            'metric' => QuickAction::FOCUS_VOLUME,
-            'described' => QuickAction::FOCUS_DESCRIPTION,
+            'metric' => Action::FOCUS_VOLUME,
+            'described' => Action::FOCUS_DESCRIPTION,
             default => null,
         };
     }
@@ -176,7 +176,7 @@ final readonly class ChildStatusBuilder
         }
 
         return array_map(
-            static fn (QuickAction $action): QuickAction => QuickAction::FOCUS_VOLUME === $action->focus
+            static fn (Action $action): Action => Action::FOCUS_VOLUME === $action->focus
                 ? $action->withVolumes($volumes[$action->eventTypeId] ?? [])
                 : $action,
             $actions,

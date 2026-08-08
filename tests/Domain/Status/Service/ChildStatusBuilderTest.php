@@ -9,7 +9,7 @@ use App\Domain\Event\ValueObject\EventType;
 use App\Domain\Status\Service\ChildStatusBuilder;
 use App\Domain\Status\ValueObject\ChildStatus;
 use App\Domain\Status\ValueObject\CurrentSleepState;
-use App\Domain\Status\ValueObject\QuickAction;
+use App\Domain\Status\ValueObject\Action;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 
@@ -46,13 +46,13 @@ final class ChildStatusBuilderTest extends TestCase
                 'volume' => $e->volume,
                 'description' => $e->description,
             ], $status->lastEvents),
-            'quick_actions' => array_map(function (QuickAction $a) {
-                $result = ['event_type_id' => $a->eventTypeId, 'focus' => $a->focus];
+            'actions' => array_map(function (Action $a) {
+                $result = ['event_type_id' => $a->eventTypeId, 'focus' => $a->focus, 'show_in_quick_actions' => $a->showInQuickActions];
                 if (null !== $a->volumes) {
                     $result['volumes'] = $a->volumes;
                 }
                 return $result;
-            }, $status->quickActions),
+            }, $status->actions),
         ];
     }
 
@@ -63,7 +63,7 @@ final class ChildStatusBuilderTest extends TestCase
                 new EventType(id: 1, childId: 1, name: 'sleep_start', format: 'range', color: null, parentId: null, keywords: null, showInLastEvents: false, showInQuickActions: true),
                 new EventType(id: 2, childId: 1, name: 'sleep_end', format: null, color: null, parentId: 1, keywords: null, showInLastEvents: false, showInQuickActions: true),
                 new EventType(id: 3, childId: 1, name: 'feeding', format: 'metric', color: null, parentId: null, keywords: null, showInLastEvents: true, showInQuickActions: true),
-                new EventType(id: 4, childId: 1, name: 'walk', format: null, color: null, parentId: null, keywords: null, showInLastEvents: true, showInQuickActions: false),
+                new EventType(id: 4, childId: 1, name: 'walk', format: 'plain', color: null, parentId: null, keywords: null, showInLastEvents: true, showInQuickActions: false),
                 new EventType(id: 5, childId: 1, name: 'bf_start', format: 'range', color: null, parentId: null, keywords: null, showInLastEvents: true, showInQuickActions: true),
                 new EventType(id: 6, childId: 1, name: 'bf_end', format: null, color: null, parentId: 5, keywords: null, showInLastEvents: true, showInQuickActions: true),
             ],
@@ -97,19 +97,27 @@ final class ChildStatusBuilderTest extends TestCase
                         'description' => null,
                     ],
                 ],
-                'quick_actions' => [
+                'actions' => [
                     [
                         'event_type_id' => 2,
                         'focus' => null,
+                        'show_in_quick_actions' => true,
                     ],
                     [
                         'event_type_id' => 3,
                         'focus' => 'volume',
+                        'show_in_quick_actions' => true,
                         'volumes' => [120, 150],
+                    ],
+                    [
+                        'event_type_id' => 4,
+                        'focus' => null,
+                        'show_in_quick_actions' => false,
                     ],
                     [
                         'event_type_id' => 5,
                         'focus' => null,
+                        'show_in_quick_actions' => true,
                     ],
                 ],
             ],
