@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Infrastructure\Http\Request;
 
-use App\Domain\Event\ValueObject\EventDraft;
+use App\Domain\Event\ValueObject\EventRangeDraft;
 use Symfony\Component\Validator\Constraints as Assert;
 
-final readonly class CreateEventRequest
+final readonly class CreateRangeEventRequest
 {
     public function __construct(
         #[Assert\NotNull(message: 'Field "child_id" is required.')]
@@ -20,21 +20,18 @@ final readonly class CreateEventRequest
 
         public ?string $occurred_at = null,
 
-        #[Assert\PositiveOrZero(message: 'Field "volume" must not be negative.')]
-        public ?int $volume = null,
-
-        public ?string $description = null,
+        #[Assert\Positive(message: 'Field "parent_id" must be a positive integer.')]
+        public ?int $range_length = null,
     ) {
     }
 
-    public function toDraft(): EventDraft
+    public function toDraft(): EventRangeDraft
     {
-        return new EventDraft(
+        return new EventRangeDraft(
             childId: (int) $this->child_id,
             eventTypeId: (int) $this->event_type_id,
             occurredAt: DateTimeParser::parse($this->occurred_at, 'occurred_at'),
-            volume: $this->volume,
-            description: $this->description,
+            rangeLength: (int) $this->range_length,
         );
     }
 }

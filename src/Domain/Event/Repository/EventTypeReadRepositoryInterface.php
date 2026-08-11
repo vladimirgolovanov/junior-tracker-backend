@@ -14,4 +14,6 @@ interface EventTypeReadRepositoryInterface
     public function listByChild(int $childId): array;
 
     public function findById(int $id): ?EventType;
+
+    public function findRangePair($parentId): ?EventType;
 }

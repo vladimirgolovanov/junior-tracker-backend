@@ -33,4 +33,9 @@ final class EventTypeNotFound extends \RuntimeException
             $childId,
         ));
     }
+
+    public static function rangePair(int $childId, string $eventTypeId): self
+    {
+        return new self(sprintf('Range event type "%s" not found for child %d', $eventTypeId, $childId));
+    }
 }

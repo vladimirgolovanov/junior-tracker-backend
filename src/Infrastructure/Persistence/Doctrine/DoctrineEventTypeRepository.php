@@ -64,6 +64,16 @@ final readonly class DoctrineEventTypeRepository implements EventTypeRepositoryI
         return new RangeEventType((int) $row['start_id'], (int) $row['end_id']);
     }
 
+    public function findRangePair($parentId): ?EventType
+    {
+        $row = $this->connection->fetchAssociative(
+            sprintf('SELECT %s FROM event_types WHERE parent_id = :parent_id', self::COLUMNS),
+            ['parent_id' => $parentId],
+        );
+
+        return false === $row ? null : $this->hydrate($row);
+    }
+
     public function findPlainType(int $childId, string $name): int
     {
         $id = $this->connection->fetchOne(
