@@ -32,8 +32,8 @@ final class DaySummaryMapper
                 $this->segmentToArray(...),
                 array_reverse($summary->segments),
             ),
-            'bedtime' => $summary->bedtime?->format(\DateTimeInterface::ATOM),
-            'morning_awake_time' => $summary->morningAwakeTime?->format(\DateTimeInterface::ATOM),
+            'bedtime' => $summary->bedtime?->format("H:i"),
+            'morning_awake_time' => $summary->morningAwakeTime?->format("H:i"),
             'total_sleep_minutes' => $summary->totalSleepMinutes,
             'day_sleep_minutes' => $summary->daySleepMinutes,
             'night_sleep_minutes' => $summary->nightSleepMinutes,
@@ -50,8 +50,8 @@ final class DaySummaryMapper
     private function segmentToArray(SleepSegment $segment): array
     {
         return [
-            'start' => $segment->start->format(\DateTimeInterface::ATOM),
-            'end' => $segment->end->format(\DateTimeInterface::ATOM),
+            'start' => $segment->start->format("H:i"),
+            'end' => $segment->end->format("H:i"),
             'state' => $segment->state->value,
             'day_part' => $segment->dayPart->value,
             'nap_number' => $segment->napNumber,
