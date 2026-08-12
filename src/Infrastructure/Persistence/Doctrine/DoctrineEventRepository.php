@@ -61,7 +61,7 @@ final readonly class DoctrineEventRepository implements EventRepositoryInterface
         );
     }
 
-    public function findLastEventPerType(int $childId): array
+    public function findLastEventPerType(int $childId, \DateTimeZone $timezone): array
     {
         $rows = $this->connection->fetchAllAssociative(
             'SELECT * FROM (
@@ -76,7 +76,10 @@ final readonly class DoctrineEventRepository implements EventRepositoryInterface
             ['childId' => $childId],
         );
 
-        return array_map($this->hydrate(...), $rows);
+        return array_map(
+            fn (array $row): EventDetails => $this->hydrate($row, $timezone),
+            $rows,
+        );
     }
 
     public function listByChild(int $childId, int $limit, int $offset): array

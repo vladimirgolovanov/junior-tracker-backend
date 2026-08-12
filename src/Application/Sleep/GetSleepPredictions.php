@@ -46,7 +46,8 @@ final readonly class GetSleepPredictions
             return [];
         }
 
-        $lastSleepEvent = $this->lastSleepEvent($childId, $sleepType);
+        $timezone = $this->children->findTimezone($childId);
+        $lastSleepEvent = $this->lastSleepEvent($childId, $sleepType, $timezone);
 
         if (null === $lastSleepEvent) {
             return [];
@@ -55,7 +56,7 @@ final readonly class GetSleepPredictions
         return $this->predicts->findByChildAndOccurredAt(
             $childId,
             $lastSleepEvent->occurredAt,
-            $this->children->findTimezone($childId),
+            $timezone,
         );
     }
 
@@ -63,11 +64,14 @@ final readonly class GetSleepPredictions
      * The prediction is recomputed on every sleep event, so the row is keyed by the
      * moment of the latest sleep_start or sleep_end.
      */
-    private function lastSleepEvent(int $childId, RangeEventType $sleepType): ?EventDetails
-    {
+    private function lastSleepEvent(
+        int $childId,
+        RangeEventType $sleepType,
+        \DateTimeZone $timezone,
+    ): ?EventDetails {
         // findLastEventPerType already returns one freshest event per type,
         // ordered from the latest to the earliest.
-        foreach ($this->events->findLastEventPerType($childId) as $event) {
+        foreach ($this->events->findLastEventPerType($childId, $timezone) as $event) {
             if (in_array($event->eventTypeId, [$sleepType->startId, $sleepType->endId], true)) {
                 return $event;
             }

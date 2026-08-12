@@ -11,9 +11,9 @@ interface EventReadRepositoryInterface
     /**
      * Последнее событие каждого типа этого ребёнка.
      *
-     * @return EventDetails[] по одному на event_type_id
+     * @return EventDetails[] one per event_type_id, occurredAt in $timezone
      */
-    public function findLastEventPerType(int $childId): array;
+    public function findLastEventPerType(int $childId, \DateTimeZone $timezone): array;
 
     /**
      * Лента событий ребёнка, от свежих к старым.

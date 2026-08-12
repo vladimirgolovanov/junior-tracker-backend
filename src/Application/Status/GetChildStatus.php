@@ -38,10 +38,11 @@ final readonly class GetChildStatus
 
         // Which timezone to use is an application concern (it comes from the database);
         // the domain only needs the moment already expressed in the child's local time.
-        $now = $now->setTimezone($this->children->findTimezone($childId));
+        $timezone = $this->children->findTimezone($childId);
+        $now = $now->setTimezone($timezone);
 
         $eventTypes = $this->eventTypes->listByChild($childId);
-        $lastEvents = $this->events->findLastEventPerType($childId);
+        $lastEvents = $this->events->findLastEventPerType($childId, $timezone);
 
         $metricTypeIds = array_values(array_map(
             static fn (EventType $t): int => $t->id,
