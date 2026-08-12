@@ -49,6 +49,8 @@ services:
         alias: App\Infrastructure\Persistence\Doctrine\DoctrineEventRepository
     App\Domain\Event\Repository\EventWriteRepositoryInterface:
         alias: App\Infrastructure\Persistence\Doctrine\DoctrineEventRepository
+    App\Domain\Sleep\Repository\SleepPredictRepositoryInterface:
+        alias: App\Infrastructure\Persistence\Doctrine\DoctrineSleepPredictRepository
 
     # TTL приглашения — скаляр, автовайрить нечего, задаём явно из env.
     App\Domain\ChildInvite\Service\ChildInviteFactory:

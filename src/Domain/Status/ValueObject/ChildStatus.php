@@ -17,6 +17,8 @@ final readonly class ChildStatus
         public CurrentSleepState $sleep,
         public array $lastEvents,
         public array $actions,
+        public int $currentMin,
+        public string $today,
     ) {
     }
 }

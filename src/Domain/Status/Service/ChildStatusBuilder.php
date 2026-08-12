@@ -15,6 +15,9 @@ final readonly class ChildStatusBuilder
     private const string SLEEP_START = 'sleep_start';
     private const string SLEEP_END = 'sleep_end';
 
+    /**
+     * @param \DateTimeImmutable $now already in the child's timezone
+     */
     public function build(
         int $childId,
         array $eventTypes,
@@ -33,7 +36,18 @@ final readonly class ChildStatusBuilder
                 $this->buildActions($eventTypes, $lastEvents, $pairIndex),
                 $volumesHint,
             ),
+            currentMin: $this->minutesSinceMidnight($now),
+            today: $now->format('Y-m-d'),
         );
+    }
+
+    /**
+     * Read off the wall clock rather than diffing against midnight: a DST day is not
+     * 1440 minutes long, and a timestamp diff would be off by the offset shift.
+     */
+    private function minutesSinceMidnight(\DateTimeImmutable $now): int
+    {
+        return (int) $now->format('G') * 60 + (int) $now->format('i');
     }
 
     private function filterLastEvents($lastEvents, $pairIndex): array

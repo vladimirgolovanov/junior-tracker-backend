@@ -22,6 +22,8 @@ final class ChildStatusMapper
             'current_awake_minutes' => $status->sleep->awakeMinutes,
             'last_events' => array_map($this->lastEventToArray(...), $status->lastEvents),
             'actions' => array_map($this->actionToArray(...), $status->actions),
+            'current_min' => $status->currentMin,
+            'today' => $status->today,
         ];
     }
 
@@ -33,7 +35,7 @@ final class ChildStatusMapper
         return [
             'event_type_id' => $event->eventTypeId,
             'name' => $event->name,
-            'occurred_at' => $event->occurredAt->format(\DateTimeInterface::ATOM),
+            'occurred_at' => $event->occurredAt->format('Y-m-d H:i:s'),
             'volume' => $event->volume,
             'description' => $event->description,
         ];

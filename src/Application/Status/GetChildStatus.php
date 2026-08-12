@@ -6,6 +6,7 @@ namespace App\Application\Status;
 
 use App\Domain\Auth\Exception\AccessDenied;
 use App\Domain\Child\Repository\ChildAccessRepositoryInterface;
+use App\Domain\Child\Repository\ChildRepositoryInterface;
 use App\Domain\Event\Repository\EventReadRepositoryInterface;
 use App\Domain\Event\Repository\EventTypeReadRepositoryInterface;
 use App\Domain\Event\ValueObject\EventType;
@@ -19,6 +20,7 @@ final readonly class GetChildStatus
 
     public function __construct(
         private ChildAccessRepositoryInterface $childAccess,
+        private ChildRepositoryInterface $children,
         private EventTypeReadRepositoryInterface $eventTypes,
         private EventReadRepositoryInterface $events,
         private ChildStatusBuilder $childStatusBuilder,
@@ -33,6 +35,10 @@ final readonly class GetChildStatus
         if (!$this->childAccess->userHasAccessToChild($userId, $childId)) {
             throw AccessDenied::toChild($childId);
         }
+
+        // Which timezone to use is an application concern (it comes from the database);
+        // the domain only needs the moment already expressed in the child's local time.
+        $now = $now->setTimezone($this->children->findTimezone($childId));
 
         $eventTypes = $this->eventTypes->listByChild($childId);
         $lastEvents = $this->events->findLastEventPerType($childId);

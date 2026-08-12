@@ -108,6 +108,45 @@ final readonly class DoctrineEventRepository implements EventRepositoryInterface
         return false === $row ? null : $this->hydrate($row);
     }
 
+    public function findDetailsByChildAndTypes(
+        int $childId,
+        array $eventTypeIds,
+        \DateTimeImmutable $from,
+        \DateTimeImmutable $to,
+        \DateTimeZone $timezone,
+    ): array {
+        if ([] === $eventTypeIds) {
+            return [];
+        }
+
+        $utc = new \DateTimeZone(self::UTC);
+
+        $rows = $this->connection->fetchAllAssociative(
+            'SELECT e.id, e.child_id, e.event_type_id, et.name, e.occurred_at, e.volume, e.description
+             FROM events e
+             JOIN event_types et ON et.id = e.event_type_id
+             WHERE e.child_id = :childId
+               AND e.event_type_id IN (:types)
+               AND e.occurred_at >= :from
+               AND e.occurred_at < :to
+             ORDER BY e.occurred_at, e.id',
+            [
+                'childId' => $childId,
+                'types' => $eventTypeIds,
+                'from' => $from->setTimezone($utc)->format('Y-m-d H:i:sP'),
+                'to' => $to->setTimezone($utc)->format('Y-m-d H:i:sP'),
+            ],
+            [
+                'types' => ArrayParameterType::INTEGER,
+            ],
+        );
+
+        return array_map(
+            fn (array $row): EventDetails => $this->hydrate($row, $timezone),
+            $rows,
+        );
+    }
+
     public function findTopVolumes(
         int $childId,
         array $eventTypeIds,
@@ -213,14 +252,15 @@ final readonly class DoctrineEventRepository implements EventRepositoryInterface
     /**
      * @param array<string, mixed> $row
      */
-    private function hydrate(array $row): EventDetails
+    private function hydrate(array $row, ?\DateTimeZone $timezone = null): EventDetails
     {
         return new EventDetails(
             id: (int) $row['id'],
             childId: (int) $row['child_id'],
             eventTypeId: (int) $row['event_type_id'],
             name: $row['name'],
-            occurredAt: (new \DateTimeImmutable($row['occurred_at']))->setTimezone(new \DateTimeZone(self::UTC)),
+            occurredAt: (new \DateTimeImmutable($row['occurred_at']))
+                ->setTimezone($timezone ?? new \DateTimeZone(self::UTC)),
             volume: null === $row['volume'] ? null : (int) $row['volume'],
             description: $row['description'],
         );

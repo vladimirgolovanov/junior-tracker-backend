@@ -25,6 +25,22 @@ interface EventReadRepositoryInterface
     public function findById(int $id): ?EventDetails;
 
     /**
+     * Полные события заданных типов за период — как findByChildAndTypes,
+     * но с volume/description, которые нужны графику.
+     *
+     * @param int[] $eventTypeIds
+     *
+     * @return EventDetails[] упорядоченные по occurredAt (в таймзоне $timezone)
+     */
+    public function findDetailsByChildAndTypes(
+        int $childId,
+        array $eventTypeIds,
+        \DateTimeImmutable $from,
+        \DateTimeImmutable $to,
+        \DateTimeZone $timezone,
+    ): array;
+
+    /**
      * Самые частые объёмы по каждому типу — подсказки для поля ввода.
      *
      * @param int[] $eventTypeIds
