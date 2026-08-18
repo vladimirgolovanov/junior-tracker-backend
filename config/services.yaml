@@ -55,6 +55,8 @@ services:
         alias: App\Infrastructure\Persistence\Doctrine\DoctrineAccountDeletionRepository
     App\Domain\ChildUser\Repository\ChildUserRepositoryInterface:
         alias: App\Infrastructure\Persistence\Doctrine\DoctrineChildUserRepository
+    App\Domain\User\Repository\CurrentUserRepositoryInterface:
+        alias: App\Infrastructure\Persistence\Doctrine\DoctrineCurrentUserRepository
 
     # TTL приглашения — скаляр, автовайрить нечего, задаём явно из env.
     App\Domain\ChildInvite\Service\ChildInviteFactory:

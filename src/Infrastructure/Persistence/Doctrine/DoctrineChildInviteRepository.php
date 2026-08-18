@@ -8,6 +8,7 @@ use App\Domain\ChildInvite\Exception\InviteAlreadyAccepted;
 use App\Domain\ChildInvite\Exception\InviteNotFound;
 use App\Domain\ChildInvite\Repository\ChildInviteRepositoryInterface;
 use App\Domain\ChildInvite\ValueObject\ChildInvite;
+use App\Domain\ChildInvite\ValueObject\ChildInviteSummary;
 use App\Domain\ChildInvite\ValueObject\NewChildInvite;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Types\Types;
@@ -35,6 +36,30 @@ final readonly class DoctrineChildInviteRepository implements ChildInviteReposit
                 'createdAt' => Types::DATETIMETZ_IMMUTABLE,
                 'expiresAt' => Types::DATETIMETZ_IMMUTABLE,
             ],
+        );
+    }
+
+    public function findAllByChild(int $childId): array
+    {
+        $rows = $this->connection->fetchAllAssociative(
+            'SELECT id, code, inviter_id, accepted_by_id, created_at, accepted_at, expires_at
+             FROM child_invites
+             WHERE child_id = :childId
+             ORDER BY created_at DESC, id DESC',
+            ['childId' => $childId],
+        );
+
+        return array_map(
+            fn (array $row): ChildInviteSummary => new ChildInviteSummary(
+                id: (int) $row['id'],
+                code: (string) $row['code'],
+                inviterId: (int) $row['inviter_id'],
+                acceptedById: null !== $row['accepted_by_id'] ? (int) $row['accepted_by_id'] : null,
+                createdAt: new \DateTimeImmutable((string) $row['created_at']),
+                acceptedAt: null !== $row['accepted_at'] ? new \DateTimeImmutable((string) $row['accepted_at']) : null,
+                expiresAt: new \DateTimeImmutable((string) $row['expires_at']),
+            ),
+            $rows,
         );
     }
 

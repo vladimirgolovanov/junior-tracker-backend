@@ -20,12 +20,14 @@ final readonly class CreateChildInvite
     }
 
     /**
-     * @throws AccessDenied приглашающий не связан с этим ребёнком
+     * @throws AccessDenied приглашающий не владеет этим ребёнком
      */
     public function handle(int $childId, int $inviterId, \DateTimeImmutable $now): CreatedChildInvite
     {
-        if (!$this->childAccess->userHasAccessToChild($inviterId, $childId)) {
-            throw AccessDenied::toChild($childId);
+        // Приглашение раздаёт доступ к ребёнку, поэтому это владельческое
+        // действие — как список участников и список приглашений.
+        if (!$this->childAccess->userIsOwnerOfChild($inviterId, $childId)) {
+            throw AccessDenied::notOwnerOfChild($childId);
         }
 
         $invite = $this->childInviteFactory->create($inviterId, $childId, $now);
