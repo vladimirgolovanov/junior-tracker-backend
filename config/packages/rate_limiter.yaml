@@ -4,3 +4,10 @@ framework:
             policy: sliding_window
             limit: 20
             interval: '1 hour'
+
+        # Публичная форма удаления проверяет пароль без токена — без лимита
+        # это оракул для перебора.
+        account_deletion:
+            policy: sliding_window
+            limit: 10
+            interval: '1 hour'

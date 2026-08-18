@@ -32,4 +32,12 @@ final readonly class DoctrineChildRepository implements ChildRepositoryInterface
             ['userId' => $userId, 'childId' => $childId],
         );
     }
+
+    public function userIsOwnerOfChild(int $userId, int $childId): bool
+    {
+        return false !== $this->connection->fetchOne(
+            'SELECT 1 FROM child_users WHERE user_id = :userId AND child_id = :childId AND is_owner = true',
+            ['userId' => $userId, 'childId' => $childId],
+        );
+    }
 }

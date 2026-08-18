@@ -26,4 +26,13 @@ final readonly class Argon2PasswordHasher implements PasswordHasherInterface
             'threads' => self::THREADS,
         ]);
     }
+
+    /**
+     * Mirror image of hash(): password_verify() reads the cost parameters from
+     * the PHC string itself, so hashes written by pwdlib verify here as well.
+     */
+    public function verify(string $plainPassword, string $hashedPassword): bool
+    {
+        return password_verify($plainPassword, $hashedPassword);
+    }
 }

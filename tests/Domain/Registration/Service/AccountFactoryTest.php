@@ -74,6 +74,11 @@ final class AccountFactoryTest extends TestCase
             {
                 return 'hashed:'.$password->value;
             }
+
+            public function verify(string $plainPassword, string $hashedPassword): bool
+            {
+                return 'hashed:'.$plainPassword === $hashedPassword;
+            }
         };
     }
 }

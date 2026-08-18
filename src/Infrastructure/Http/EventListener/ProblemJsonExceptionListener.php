@@ -4,11 +4,14 @@ declare(strict_types=1);
 
 namespace App\Infrastructure\Http\EventListener;
 
+use App\Domain\Account\Exception\InvalidCredentials;
 use App\Domain\Auth\Exception\AccessDenied;
 use App\Domain\Auth\Exception\Unauthenticated;
 use App\Domain\ChildInvite\Exception\InviteAlreadyAccepted;
 use App\Domain\ChildInvite\Exception\InviteExpired;
 use App\Domain\ChildInvite\Exception\InviteNotFound;
+use App\Domain\ChildUser\Exception\ChildUserNotFound;
+use App\Domain\ChildUser\Exception\LastOwnerProtected;
 use App\Domain\Event\Exception\EventNotFound;
 use App\Domain\Event\Exception\EventTypeNotFound;
 use App\Domain\Registration\Exception\EmailAlreadyRegistered;
@@ -58,6 +61,20 @@ final readonly class ProblemJsonExceptionListener
             $exception instanceof AccessDenied => $this->problem(
                 Response::HTTP_FORBIDDEN,
                 'Access denied',
+            ),
+            // 403, not 401: the bearer token is valid, the password confirming
+            // an irreversible deletion is not.
+            $exception instanceof InvalidCredentials => $this->problem(
+                Response::HTTP_FORBIDDEN,
+                'Invalid credentials',
+            ),
+            $exception instanceof ChildUserNotFound => $this->problem(
+                Response::HTTP_NOT_FOUND,
+                'Child user not found',
+            ),
+            $exception instanceof LastOwnerProtected => $this->problem(
+                Response::HTTP_CONFLICT,
+                'Child must keep at least one owner',
             ),
             $exception instanceof EventTypeNotFound => $this->problem(
                 Response::HTTP_NOT_FOUND,

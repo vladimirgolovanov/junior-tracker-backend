@@ -10,4 +10,9 @@ final class AccessDenied extends \RuntimeException
     {
         return new self(sprintf('User is not allowed to access child %d.', $childId));
     }
+
+    public static function notOwnerOfChild(int $childId): self
+    {
+        return new self(sprintf('User is not an owner of child %d.', $childId));
+    }
 }
