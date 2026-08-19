@@ -31,7 +31,7 @@ final class SubmitAccountDeletionController
     ) {
     }
 
-    #[Route('/account-deletion', name: 'account_deletion_submit', methods: ['POST'])]
+    #[Route('/delete-account', name: 'account_deletion_submit', methods: ['POST'])]
     #[RateLimit(limiter: 'account_deletion')]
     public function __invoke(Request $request): Response
     {

@@ -43,7 +43,7 @@ final readonly class AccountDeletionPage
 
             {$banner}
 
-            <form method="post" action="/account-deletion">
+            <form method="post" action="/delete-account">
                 <label for="email">Email</label>
                 <input id="email" name="email" type="email" autocomplete="email" required>
 

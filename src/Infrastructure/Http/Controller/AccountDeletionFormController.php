@@ -20,7 +20,7 @@ final class AccountDeletionFormController
     ) {
     }
 
-    #[Route('/account-deletion', name: 'account_deletion_form', methods: ['GET'])]
+    #[Route('/delete-account', name: 'account_deletion_form', methods: ['GET'])]
     public function __invoke(): Response
     {
         return new Response(
