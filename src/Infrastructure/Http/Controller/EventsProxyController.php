@@ -49,16 +49,14 @@ final class EventsProxyController
     ) {
     }
 
-    #[Route(
-        self::PATH_PREFIX,
-        name: 'proxy_events_root',
-        methods: self::METHODS,
-        priority: -10,
-    )]
+    // A single catch-all with an optional {path} so it also matches the bare collection
+    // both without and with a trailing slash (/api/v2/events and /api/v2/events/), which
+    // is the trailing-slash convention the old backend and the frontend use.
     #[Route(
         self::PATH_PREFIX.'/{path}',
-        name: 'proxy_events_path',
-        requirements: ['path' => '.+'],
+        name: 'proxy_events',
+        requirements: ['path' => '.*'],
+        defaults: ['path' => ''],
         methods: self::METHODS,
         priority: -10,
     )]
