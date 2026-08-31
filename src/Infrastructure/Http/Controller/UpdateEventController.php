@@ -23,8 +23,10 @@ final class UpdateEventController
     ) {
     }
 
-    #[Route('/api/v2/events/{id}', name: 'api_v2_events_update', requirements: ['id' => '\d+'], methods: ['PATCH'])]
-    #[Authenticated]
+    // Temporarily served by EventsProxyController (forwarded to the old backend).
+    // Re-enable this route once the endpoint is implemented here.
+    // #[Route('/api/v2/events/{id}', name: 'api_v2_events_update', requirements: ['id' => '\d+'], methods: ['PATCH'])]
+    // #[Authenticated]
     public function __invoke(
         int $id,
         Request $request,

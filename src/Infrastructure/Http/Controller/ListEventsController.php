@@ -23,8 +23,10 @@ final class ListEventsController
     ) {
     }
 
-    #[Route('/api/v2/events', name: 'api_v2_events', methods: ['GET'])]
-    #[Authenticated]
+    // Temporarily served by EventsProxyController (forwarded to the old backend).
+    // Re-enable this route once the endpoint is implemented here.
+    // #[Route('/api/v2/events', name: 'api_v2_events', methods: ['GET'])]
+    // #[Authenticated]
     public function __invoke(
         Request $request,
         #[MapQueryString(validationFailedStatusCode: Response::HTTP_UNPROCESSABLE_ENTITY)]

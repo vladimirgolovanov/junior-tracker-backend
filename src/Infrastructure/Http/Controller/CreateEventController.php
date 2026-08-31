@@ -24,8 +24,10 @@ final class CreateEventController
     ) {
     }
 
-    #[Route('/api/v2/events', name: 'api_v2_events_create', methods: ['POST'])]
-    #[Authenticated]
+    // Temporarily served by EventsProxyController (forwarded to the old backend).
+    // Re-enable this route once the endpoint is implemented here.
+    // #[Route('/api/v2/events', name: 'api_v2_events_create', methods: ['POST'])]
+    // #[Authenticated]
     public function create(
         Request $request,
         #[MapRequestPayload(validationFailedStatusCode: Response::HTTP_UNPROCESSABLE_ENTITY)]

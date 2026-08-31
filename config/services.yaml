@@ -67,3 +67,8 @@ services:
     App\Application\Auth\AuthenticateByToken:
         arguments:
             $ttlSeconds: '%env(int:ACCESS_TOKEN_TTL_SECONDS)%'
+
+    # Base URL of the old backend that temporarily serves /api/events/* (HttpClientInterface is autowired).
+    App\Infrastructure\Http\Controller\EventsProxyController:
+        arguments:
+            $legacyBackendUrl: '%env(LEGACY_BACKEND_URL)%'
