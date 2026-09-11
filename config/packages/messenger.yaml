@@ -9,6 +9,10 @@ framework:
         transports:
             exports:
                 dsn: '%env(MESSENGER_TRANSPORT_DSN)%'
+                # Fail fast: the handler records the failure on the job row and
+                # reports to Sentry, so retrying the same message adds nothing.
+                retry_strategy:
+                    max_retries: 0
                 options:
                     exchange:
                         name: exports

@@ -57,10 +57,13 @@ final readonly class GenerateExportHandler
                 new \DateTimeImmutable('now', new \DateTimeZone('UTC')),
             );
         } catch (\Throwable $exception) {
-            // Record the failure as the terminal state the owner sees; they can
-            // request a fresh export. The message is acknowledged rather than
-            // retried, so a generation bug does not loop forever.
+            // Record the failure as the terminal state the owner sees, then
+            // rethrow so the worker failure is reported to Sentry (via the
+            // messenger integration). Retries are disabled for this transport,
+            // so it does not loop — the owner can request a fresh export.
             $this->exports->markFailed($export->id, $exception->getMessage());
+
+            throw $exception;
         }
     }
 }

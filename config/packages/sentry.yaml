@@ -1,0 +1,25 @@
+sentry:
+    # Reads SENTRY_DSN from the environment. An empty DSN disables the SDK, so
+    # Sentry stays off in dev/test and only reports where the secret sets a DSN.
+    dsn: '%env(SENTRY_DSN)%'
+    options:
+        environment: '%env(APP_ENV)%'
+        # These are expected, client-facing conditions that
+        # ProblemJsonExceptionListener turns into 4xx responses — not bugs, so
+        # keep them out of Sentry. Unexpected 500s and worker failures are still
+        # captured.
+        ignore_exceptions:
+            - App\Domain\Auth\Exception\Unauthenticated
+            - App\Domain\Auth\Exception\AccessDenied
+            - App\Domain\Account\Exception\InvalidCredentials
+            - App\Domain\Shared\Exception\InvalidValue
+            - App\Domain\ChildUser\Exception\ChildUserNotFound
+            - App\Domain\ChildUser\Exception\LastOwnerProtected
+            - App\Domain\Event\Exception\EventNotFound
+            - App\Domain\Event\Exception\EventTypeNotFound
+            - App\Domain\Export\Exception\ExportNotFound
+            - App\Domain\Export\Exception\ExportNotReady
+            - App\Domain\Registration\Exception\EmailAlreadyRegistered
+            - App\Domain\ChildInvite\Exception\InviteNotFound
+            - App\Domain\ChildInvite\Exception\InviteExpired
+            - App\Domain\ChildInvite\Exception\InviteAlreadyAccepted
