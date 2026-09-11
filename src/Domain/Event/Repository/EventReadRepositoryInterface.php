@@ -25,6 +25,21 @@ interface EventReadRepositoryInterface
     public function findById(int $id): ?EventDetails;
 
     /**
+     * All of a child's events across every type, oldest first, optionally
+     * bounded by an occurred_at range [from, to). Unlike
+     * findDetailsByChildAndTypes the type list is not required and the range is
+     * optional — the shape the data export needs.
+     *
+     * @return EventDetails[] ordered by occurredAt (in $timezone)
+     */
+    public function findAllByChild(
+        int $childId,
+        ?\DateTimeImmutable $from,
+        ?\DateTimeImmutable $to,
+        \DateTimeZone $timezone,
+    ): array;
+
+    /**
      * Полные события заданных типов за период — как findByChildAndTypes,
      * но с volume/description, которые нужны графику.
      *

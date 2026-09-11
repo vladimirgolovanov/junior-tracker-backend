@@ -427,7 +427,7 @@ use Symfony\Component\Config\Loader\ParamConfigurator as Param;
  *         resources?: string|array<string, scalar|Param|null>,
  *     },
  *     messenger?: bool|array{ // Messenger configuration
- *         enabled?: bool|Param, // Default: false
+ *         enabled?: bool|Param, // Default: true
  *         routing?: array<string, string|list<scalar|Param|null>>,
  *         serializer?: array{
  *             default_serializer?: scalar|Param|null, // Service id to use as the default serializer for the transports. // Default: "messenger.transport.native_php_serializer"
@@ -890,12 +890,66 @@ use Symfony\Component\Config\Loader\ParamConfigurator as Param;
  *         resolve_target_entities?: array<string, scalar|Param|null>,
  *     },
  * }
+ * @psalm-type DoctrineMigrationsConfig = array{
+ *     enable_service_migrations?: bool|Param, // Whether to enable fetching migrations from the service container. // Default: false
+ *     migrations_paths?: array<string, scalar|Param|null>,
+ *     services?: array<string, scalar|Param|null>,
+ *     factories?: array<string, scalar|Param|null>,
+ *     storage?: array{ // Storage to use for migration status metadata.
+ *         table_storage?: array{ // The default metadata storage, implemented as a table in the database.
+ *             table_name?: scalar|Param|null, // Default: null
+ *             version_column_name?: scalar|Param|null, // Default: null
+ *             version_column_length?: scalar|Param|null, // Default: null
+ *             executed_at_column_name?: scalar|Param|null, // Default: null
+ *             execution_time_column_name?: scalar|Param|null, // Default: null
+ *         },
+ *     },
+ *     migrations?: list<scalar|Param|null>,
+ *     connection?: scalar|Param|null, // Connection name to use for the migrations database. // Default: null
+ *     em?: scalar|Param|null, // Entity manager name to use for the migrations database (available when doctrine/orm is installed). // Default: null
+ *     all_or_nothing?: scalar|Param|null, // Run all migrations in a transaction. // Default: false
+ *     check_database_platform?: scalar|Param|null, // Adds an extra check in the generated migrations to allow execution only on the same platform as they were initially generated on. // Default: true
+ *     custom_template?: scalar|Param|null, // Custom template path for generated migration classes. // Default: null
+ *     organize_migrations?: scalar|Param|null, // Organize migrations mode. Possible values are: "BY_YEAR", "BY_YEAR_AND_MONTH", false // Default: false
+ *     enable_profiler?: bool|Param, // Whether or not to enable the profiler collector to calculate and visualize migration status. This adds some queries overhead. // Default: false
+ *     transactional?: bool|Param, // Whether or not to wrap migrations in a single transaction. // Default: true
+ * }
+ * @psalm-type AsyncAwsConfig = array{
+ *     register_service?: bool|Param, // If set to false, no services will be created. // Default: true
+ *     credential_provider?: scalar|Param|null, // A service name for AsyncAws\Core\Credentials\CredentialProvider. // Default: null
+ *     credential_provider_cache?: scalar|Param|null, // A service implementing Symfony\Contracts\Cache\CacheInterface to efficiently cache credentials. // Default: "cache.app"
+ *     http_client?: scalar|Param|null, // A service name for Symfony\Contracts\HttpClient\HttpClientInterface.
+ *     logger?: scalar|Param|null, // A service name for Psr\Log\LoggerInterface.
+ *     config?: array<string, mixed>,
+ *     clients?: array<string, array{ // Default: []
+ *         register_service?: bool|Param, // If set to false, no service will be created for this AWS type. // Default: true
+ *         config?: array<string, mixed>,
+ *         type?: "app_sync"|"athena"|"bedrock_agent"|"bedrock_agent_core"|"bedrock_runtime"|"cloud_formation"|"cloud_front"|"cloud_watch"|"cloud_watch_logs"|"code_build"|"code_commit"|"code_deploy"|"cognito_identity_provider"|"comprehend"|"dynamo_db"|"ec2"|"ecr"|"elasti_cache"|"event_bridge"|"firehose"|"iam"|"image_builder"|"iot"|"iot_data"|"kinesis"|"kms"|"lambda"|"location_service"|"media_convert"|"rds_data_service"|"rekognition"|"route53"|"s3"|"simple_s3"|"s3_vectors"|"scheduler"|"secrets_manager"|"ses"|"sns"|"sqs"|"ssm"|"sso"|"sso_oidc"|"sts"|"step_functions"|"timestream_query"|"timestream_write"|"translate"|"x_ray"|Param, // A valid AWS type. The service name will be used as default.
+ *         credential_provider?: scalar|Param|null, // A service name for AsyncAws\Core\Credentials\CredentialProvider.
+ *         http_client?: scalar|Param|null, // A service name for Symfony\Contracts\HttpClient\HttpClientInterface.
+ *         logger?: scalar|Param|null, // A service name for Psr\Log\LoggerInterface.
+ *     }>,
+ *     secrets?: bool|array{ // The SSM EnvLoader configuration.
+ *         enabled?: bool|Param, // Default: false
+ *         path?: scalar|Param|null, // Path to the parameters. // Default: null
+ *         recursive?: bool|Param, // Retrieve all parameters within a hierarchy. // Default: true
+ *         max_results?: int|Param, // The maximum number of items for each ssm call. Maximum value of 50. // Default: null
+ *         client?: scalar|Param|null, // Name of the SSM client. When null, use the default SSM configuration. // Default: null
+ *         cache?: bool|array{
+ *             enabled?: bool|Param, // Default: false
+ *             pool?: scalar|Param|null, // Identifier of the Symfony Cache Pool. // Default: "cache.system"
+ *             ttl?: int|Param, // Duration of cache in seconds // Default: 600
+ *         },
+ *     },
+ * }
  * @psalm-type ConfigType = array{
  *     imports?: ImportsConfig,
  *     parameters?: ParametersConfig,
  *     services?: ServicesConfig,
  *     framework?: FrameworkConfig,
  *     doctrine?: DoctrineConfig,
+ *     doctrine_migrations?: DoctrineMigrationsConfig,
+ *     async_aws?: AsyncAwsConfig,
  *     "when@dev"?: array{
  *         imports?: ImportsConfig,
  *         parameters?: ParametersConfig,
@@ -903,6 +957,8 @@ use Symfony\Component\Config\Loader\ParamConfigurator as Param;
  *         framework?: FrameworkConfig,
  *         maker?: MakerConfig,
  *         doctrine?: DoctrineConfig,
+ *         doctrine_migrations?: DoctrineMigrationsConfig,
+ *         async_aws?: AsyncAwsConfig,
  *     },
  *     "when@prod"?: array{
  *         imports?: ImportsConfig,
@@ -910,6 +966,8 @@ use Symfony\Component\Config\Loader\ParamConfigurator as Param;
  *         services?: ServicesConfig,
  *         framework?: FrameworkConfig,
  *         doctrine?: DoctrineConfig,
+ *         doctrine_migrations?: DoctrineMigrationsConfig,
+ *         async_aws?: AsyncAwsConfig,
  *     },
  *     "when@test"?: array{
  *         imports?: ImportsConfig,
@@ -917,6 +975,8 @@ use Symfony\Component\Config\Loader\ParamConfigurator as Param;
  *         services?: ServicesConfig,
  *         framework?: FrameworkConfig,
  *         doctrine?: DoctrineConfig,
+ *         doctrine_migrations?: DoctrineMigrationsConfig,
+ *         async_aws?: AsyncAwsConfig,
  *     },
  *     ...<string, ExtensionType|array{ // extra keys must follow the when@%env% pattern or match an extension alias
  *         imports?: ImportsConfig,

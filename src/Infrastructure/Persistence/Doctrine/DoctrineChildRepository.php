@@ -25,6 +25,14 @@ final readonly class DoctrineChildRepository implements ChildRepositoryInterface
         return new \DateTimeZone($timezone);
     }
 
+    public function findName(int $childId): string
+    {
+        return (string) $this->connection->fetchOne(
+            'SELECT name FROM childs WHERE id = :id',
+            ['id' => $childId],
+        );
+    }
+
     public function userHasAccessToChild(int $userId, int $childId): bool
     {
         return false !== $this->connection->fetchOne(

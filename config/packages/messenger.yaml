@@ -1,0 +1,27 @@
+framework:
+    messenger:
+        # Uncomment to send messages that exhaust their retries to a holding transport.
+        # failure_transport: failed
+
+        # One transport per logical queue. They share a single base DSN
+        # (amqp://user:pass@host/vhost) and differ only by exchange/queue name,
+        # so adding a queue later is just another entry here.
+        transports:
+            exports:
+                dsn: '%env(MESSENGER_TRANSPORT_DSN)%'
+                options:
+                    exchange:
+                        name: exports
+                    queues:
+                        exports: ~
+            # failed: 'doctrine://default?queue_name=failed'
+
+        routing:
+            App\Application\Export\Message\GenerateExport: exports
+
+when@test:
+    framework:
+        messenger:
+            transports:
+                # Handle synchronously in tests so no broker/worker is needed.
+                exports: 'sync://'

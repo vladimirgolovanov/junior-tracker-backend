@@ -111,6 +111,42 @@ final readonly class DoctrineEventRepository implements EventRepositoryInterface
         return false === $row ? null : $this->hydrate($row);
     }
 
+    public function findAllByChild(
+        int $childId,
+        ?\DateTimeImmutable $from,
+        ?\DateTimeImmutable $to,
+        \DateTimeZone $timezone,
+    ): array {
+        $utc = new \DateTimeZone(self::UTC);
+
+        $conditions = ['e.child_id = :childId'];
+        $params = ['childId' => $childId];
+
+        if (null !== $from) {
+            $conditions[] = 'e.occurred_at >= :from';
+            $params['from'] = $from->setTimezone($utc)->format('Y-m-d H:i:sP');
+        }
+
+        if (null !== $to) {
+            $conditions[] = 'e.occurred_at < :to';
+            $params['to'] = $to->setTimezone($utc)->format('Y-m-d H:i:sP');
+        }
+
+        $rows = $this->connection->fetchAllAssociative(
+            'SELECT e.id, e.child_id, e.event_type_id, et.name, e.occurred_at, e.volume, e.description
+             FROM events e
+             JOIN event_types et ON et.id = e.event_type_id
+             WHERE '.implode(' AND ', $conditions).'
+             ORDER BY e.occurred_at, e.id',
+            $params,
+        );
+
+        return array_map(
+            fn (array $row): EventDetails => $this->hydrate($row, $timezone),
+            $rows,
+        );
+    }
+
     public function findDetailsByChildAndTypes(
         int $childId,
         array $eventTypeIds,

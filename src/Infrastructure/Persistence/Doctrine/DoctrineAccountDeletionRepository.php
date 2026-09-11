@@ -33,7 +33,8 @@ final readonly class DoctrineAccountDeletionRepository implements AccountDeletio
         'DELETE FROM daily_analytics WHERE child_id IN (:childIds)',
         'DELETE FROM api_keys WHERE child_id IN (:childIds)',
         'DELETE FROM child_invites WHERE child_id IN (:childIds)',
-        // child_users rows disappear with the child through ON DELETE CASCADE.
+        // child_users and exports rows disappear with the child through
+        // ON DELETE CASCADE (their stored S3 files are cleaned up separately).
         'DELETE FROM childs WHERE id IN (:childIds)',
     ];
 

@@ -60,4 +60,9 @@ final class InvalidValue extends \DomainException
     {
         return new self('timezone', 'Timezone must be a valid IANA identifier, e.g. "Europe/Moscow".');
     }
+
+    public static function dateRangeOutOfOrder(): self
+    {
+        return new self('from', 'Field "from" must not be later than "to".');
+    }
 }

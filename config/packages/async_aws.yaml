@@ -1,0 +1,12 @@
+async_aws:
+    clients:
+        s3:
+            type: s3
+            config:
+                region: '%env(AWS_REGION)%'
+                # S3-compatible endpoint (e.g. MinIO). Leave pointing at the real
+                # bucket host in each environment via AWS_ENDPOINT.
+                endpoint: '%env(AWS_ENDPOINT)%'
+                pathStyleEndpoint: '%env(bool:AWS_S3_PATH_STYLE)%'
+                accessKeyId: '%env(AWS_ACCESS_KEY_ID)%'
+                accessKeySecret: '%env(AWS_SECRET_ACCESS_KEY)%'

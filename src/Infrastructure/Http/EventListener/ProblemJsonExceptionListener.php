@@ -14,6 +14,8 @@ use App\Domain\ChildUser\Exception\ChildUserNotFound;
 use App\Domain\ChildUser\Exception\LastOwnerProtected;
 use App\Domain\Event\Exception\EventNotFound;
 use App\Domain\Event\Exception\EventTypeNotFound;
+use App\Domain\Export\Exception\ExportNotFound;
+use App\Domain\Export\Exception\ExportNotReady;
 use App\Domain\Registration\Exception\EmailAlreadyRegistered;
 use App\Domain\Shared\Exception\InvalidValue;
 use Symfony\Component\EventDispatcher\Attribute\AsEventListener;
@@ -83,6 +85,14 @@ final readonly class ProblemJsonExceptionListener
             $exception instanceof EventNotFound => $this->problem(
                 Response::HTTP_NOT_FOUND,
                 'Event not found',
+            ),
+            $exception instanceof ExportNotFound => $this->problem(
+                Response::HTTP_NOT_FOUND,
+                'Export not found',
+            ),
+            $exception instanceof ExportNotReady => $this->problem(
+                Response::HTTP_CONFLICT,
+                'Export is not ready',
             ),
             $exception instanceof EmailAlreadyRegistered => $this->problem(
                 Response::HTTP_CONFLICT,

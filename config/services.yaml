@@ -57,6 +57,10 @@ services:
         alias: App\Infrastructure\Persistence\Doctrine\DoctrineChildUserRepository
     App\Domain\User\Repository\CurrentUserRepositoryInterface:
         alias: App\Infrastructure\Persistence\Doctrine\DoctrineCurrentUserRepository
+    App\Domain\Export\Repository\ExportRepositoryInterface:
+        alias: App\Infrastructure\Persistence\Doctrine\DoctrineExportRepository
+    App\Application\Export\Storage\ExportStorageInterface:
+        alias: App\Infrastructure\Storage\S3ExportStorage
 
     # TTL приглашения — скаляр, автовайрить нечего, задаём явно из env.
     App\Domain\ChildInvite\Service\ChildInviteFactory:
@@ -72,3 +76,8 @@ services:
     App\Infrastructure\Http\Controller\EventsProxyController:
         arguments:
             $legacyBackendUrl: '%env(LEGACY_BACKEND_URL)%'
+
+    # Bucket for generated export files; the S3 client itself is autowired from the async-aws bundle.
+    App\Infrastructure\Storage\S3ExportStorage:
+        arguments:
+            $bucket: '%env(EXPORT_S3_BUCKET)%'
