@@ -9,6 +9,8 @@ sentry:
         # keep them out of Sentry. Unexpected 500s and worker failures are still
         # captured.
         ignore_exceptions:
+            # Route-not-found 404s (unknown paths, crawlers/bots) are client-facing, not bugs.
+            - Symfony\Component\HttpKernel\Exception\NotFoundHttpException
             - App\Domain\Auth\Exception\Unauthenticated
             - App\Domain\Auth\Exception\AccessDenied
             - App\Domain\Account\Exception\InvalidCredentials
