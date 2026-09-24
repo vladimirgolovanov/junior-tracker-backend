@@ -7,11 +7,11 @@ namespace App\Application\Sleep;
 use App\Domain\Child\Repository\ChildRepositoryInterface;
 use App\Domain\Event\Repository\EventRepositoryInterface;
 use App\Domain\Event\Repository\EventTypeRepositoryInterface;
+use App\Domain\Sleep\Repository\SleepScheduleRepositoryInterface;
 use App\Domain\Sleep\Service\CycleDayEventsIsolator;
 use App\Domain\Sleep\Service\DaySummaryBuilder;
 use App\Domain\Sleep\ValueObject\CycleWindow;
 use App\Domain\Sleep\ValueObject\DaySummary;
-use App\Domain\Sleep\ValueObject\SleepSchedule;
 
 final readonly class GetSleepSummary
 {
@@ -19,6 +19,7 @@ final readonly class GetSleepSummary
         private EventRepositoryInterface $eventRepository,
         private EventTypeRepositoryInterface $eventTypeRepository,
         private ChildRepositoryInterface $childRepository,
+        private SleepScheduleRepositoryInterface $scheduleRepository,
         private CycleDayEventsIsolator $isolator,
         private DaySummaryBuilder $summaryBuilder,
     ) {
@@ -38,7 +39,7 @@ final readonly class GetSleepSummary
         $firstDay = new \DateTimeImmutable($firstDay->format('Y-m-d'), $timezone);
         $lastDay = new \DateTimeImmutable($lastDay->format('Y-m-d'), $timezone);
 
-        $schedule = new SleepSchedule();
+        $schedule = $this->scheduleRepository->findForChild($childId);
         $rangeType = $this->eventTypeRepository->findRangeType($childId, 'sleep_start');
         $window = CycleWindow::forDates($firstDay->modify('-1 day'), $lastDay);
 
