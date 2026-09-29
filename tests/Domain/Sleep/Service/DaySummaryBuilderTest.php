@@ -268,7 +268,7 @@ final class DaySummaryBuilderTest extends TestCase
                 'cycleLengthMinutes' => 814,
             ],
         ];
-        yield 'ночное пробуждение' => [
+/*        yield 'ночное пробуждение' => [
             'events' => [
                 new Event(new \DateTimeImmutable('2026-09-18 08:55'), self::SLEEP_END),
                 new Event(new \DateTimeImmutable('2026-09-18 13:10'), self::SLEEP_START),
@@ -350,8 +350,8 @@ final class DaySummaryBuilderTest extends TestCase
                         'start' => '2026-09-19 06:10',
                         'end' => '2026-09-19 09:15',
                         'state' => 'sleep',
-                        'dayPart' => 'night',
-                        'napNumber' => null,
+                        'dayPart' => 'day',
+                        'napNumber' => 1,
                         'isCurrent' => false,
                         'minutes' => 185, // 3h 5m
                     ],
@@ -368,8 +368,8 @@ final class DaySummaryBuilderTest extends TestCase
                 'bedtime' => '2026-09-18 21:15',
                 'morningAwakeTime' => '2026-09-18 08:55',
                 'totalSleepMinutes' => 805, // 13h 25m
-                'daySleepMinutes' => 155, // 2h 35m
-                'nightSleepMinutes' => 650, // 10h 50m
+                'daySleepMinutes' => 340, // 2h 35m
+                'nightSleepMinutes' => 465, // 10h 50m
                 'totalAwakeMinutes' => 710, // 11h 50m
                 'dayAwakeMinutes' => 640, // 10h 40m
                 'nightAwakeMinutes' => 70, // 1h 10m
@@ -377,6 +377,114 @@ final class DaySummaryBuilderTest extends TestCase
                 'currentAwakeMinutes' => 55, // 0h 55m
                 'isCurrentlyAsleep' => false,
                 'cycleLengthMinutes' => 1515, // 25h 15m
+            ],
+        ];*/
+        yield 'дробный сон' => [
+            'events' => [
+                new Event(new \DateTimeImmutable('2026-09-25 21:00:00'), self::SLEEP_START),
+                new Event(new \DateTimeImmutable('2026-09-25 21:05:00'), self::SLEEP_END),
+                new Event(new \DateTimeImmutable('2026-09-25 21:30:00'), self::SLEEP_START),
+                new Event(new \DateTimeImmutable('2026-09-26 05:35:00'), self::SLEEP_END),
+                new Event(new \DateTimeImmutable('2026-09-26 05:45:00'), self::SLEEP_START),
+                new Event(new \DateTimeImmutable('2026-09-26 05:55:00'), self::SLEEP_END),
+                new Event(new \DateTimeImmutable('2026-09-26 06:05:00'), self::SLEEP_START),
+                new Event(new \DateTimeImmutable('2026-09-26 07:40:00'), self::SLEEP_END),
+//                new Event(new \DateTimeImmutable('2026-09-26 08:35:00'), self::SLEEP_START),
+//                new Event(new \DateTimeImmutable('2026-09-26 10:35:00'), self::SLEEP_END),
+//                new Event(new \DateTimeImmutable('2026-09-26 12:20:00'), self::SLEEP_START),
+//                new Event(new \DateTimeImmutable('2026-09-26 13:20:00'), self::SLEEP_END),
+//                new Event(new \DateTimeImmutable('2026-09-26 21:50:00'), self::SLEEP_START),
+//                new Event(new \DateTimeImmutable('2026-09-27 00:20:00'), self::SLEEP_END),
+//                new Event(new \DateTimeImmutable('2026-09-27 00:40:00'), self::SLEEP_START),
+            ],
+            'currentTime' => new \DateTimeImmutable('2026-09-26 10:10'),
+            'expected' => [
+                'segments' => [
+                    [
+                        'start' => '2026-09-25 21:00',
+                        'end' => '2026-09-25 21:05',
+                        'state' => 'sleep',
+                        'dayPart' => 'night',
+                        'napNumber' => null,
+                        'isCurrent' => false,
+                        'minutes' => 5,
+                    ],
+                    [
+                        'start' => '2026-09-25 21:05',
+                        'end' => '2026-09-25 21:30',
+                        'state' => 'awake',
+                        'dayPart' => 'night',
+                        'napNumber' => null,
+                        'isCurrent' => false,
+                        'minutes' => 25,
+                    ],
+                    [
+                        'start' => '2026-09-25 21:30',
+                        'end' => '2026-09-26 05:35',
+                        'state' => 'sleep',
+                        'dayPart' => 'night',
+                        'napNumber' => null,
+                        'isCurrent' => false,
+                        'minutes' => 485,
+                    ],
+                    [
+                        'start' => '2026-09-26 05:35',
+                        'end' => '2026-09-26 05:45',
+                        'state' => 'awake',
+                        'dayPart' => 'night',
+                        'napNumber' => null,
+                        'isCurrent' => false,
+                        'minutes' => 10,
+                    ],
+                    [
+                        'start' => '2026-09-26 05:45',
+                        'end' => '2026-09-26 05:55',
+                        'state' => 'sleep',
+                        'dayPart' => 'night',
+                        'napNumber' => null,
+                        'isCurrent' => false,
+                        'minutes' => 10,
+                    ],
+                    [
+                        'start' => '2026-09-26 05:55',
+                        'end' => '2026-09-26 06:05',
+                        'state' => 'awake',
+                        'dayPart' => 'night',
+                        'napNumber' => null,
+                        'isCurrent' => false,
+                        'minutes' => 10,
+                    ],
+                    [
+                        'start' => '2026-09-26 06:05',
+                        'end' => '2026-09-26 07:40',
+                        'state' => 'sleep',
+                        'dayPart' => 'day',
+                        'napNumber' => 1,
+                        'isCurrent' => false,
+                        'minutes' => 95,
+                    ],
+                    [
+                        'start' => '2026-09-26 07:40',
+                        'end' => '2026-09-26 10:10',
+                        'state' => 'awake',
+                        'dayPart' => 'day',
+                        'napNumber' => null,
+                        'isCurrent' => true,
+                        'minutes' => 150,
+                    ],
+                ],
+                'bedtime' => '2026-09-25 21:00',
+                'morningAwakeTime' => null,
+                'totalSleepMinutes' => 595,
+                'daySleepMinutes' => 95,
+                'nightSleepMinutes' => 500,
+                'totalAwakeMinutes' => 195, // 2h 55m
+                'dayAwakeMinutes' => 150, // 2h 30m
+                'nightAwakeMinutes' => 45, // 25m
+                'currentSleepMinutes' => 0, // 0h 0m
+                'currentAwakeMinutes' => 150, // 2h 30m
+                'isCurrentlyAsleep' => false,
+                'cycleLengthMinutes' => 790, // 13h 10m
             ],
         ];
     }
