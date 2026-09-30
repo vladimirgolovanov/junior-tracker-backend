@@ -31,7 +31,7 @@ final readonly class DefaultEventTypesFactory
                 format: 'metric',
                 showInLastEvents: true,
                 showInQuickActions: true,
-                color: '#ff9eb5',
+                color: 'ff9eb5',
             ),
             new NewEventType(
                 name: 'food',
@@ -39,7 +39,7 @@ final readonly class DefaultEventTypesFactory
                 format: 'described',
                 showInLastEvents: true,
                 showInQuickActions: true,
-                color: '#2ecc71',
+                color: '2ecc71',
             ),
             new NewEventType(
                 name: 'poo',
@@ -47,7 +47,7 @@ final readonly class DefaultEventTypesFactory
                 format: 'plain',
                 showInLastEvents: false,
                 showInQuickActions: false,
-                color: '#8B4513',
+                color: '8B4513',
             ),
             new NewEventType(
                 name: 'bath',
@@ -55,7 +55,7 @@ final readonly class DefaultEventTypesFactory
                 format: 'plain',
                 showInLastEvents: false,
                 showInQuickActions: false,
-                color: '#8B4513', # todo: new color
+                color: '8B4513', # todo: new color
             ),
             new NewEventType(
                 name: 'breastfeeding_start',
@@ -63,7 +63,7 @@ final readonly class DefaultEventTypesFactory
                 format: 'range',
                 showInLastEvents: true,
                 showInQuickActions: true,
-                color: '#2ecc71',
+                color: '2ecc71',
                 end: new NewEventType(
                     name: 'breastfeeding_end',
                     keywords: null,
