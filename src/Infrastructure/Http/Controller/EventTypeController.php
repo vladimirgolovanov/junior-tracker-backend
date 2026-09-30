@@ -32,7 +32,7 @@ final class EventTypeController
     ): JsonResponse {
         $userId = $request->attributes->getInt(AuthenticationListener::USER_ID_ATTRIBUTE);
 
-        $eventTypes = ($this->listEventTypes)($userId, (int) $query->child_id);
+        $eventTypes = $this->listEventTypes->handle($userId, (int) $query->child_id);
 
         return new JsonResponse($this->mapper->toArray($eventTypes));
     }

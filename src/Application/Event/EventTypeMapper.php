@@ -48,13 +48,14 @@ final class EventTypeMapper
 
     private function showInFilters(EventType $eventType): bool
     {
-        // Only the range start belongs in filters; the paired *_end type never does.
         if (self::RANGE_END_FORMAT === $eventType->format) {
             return false;
         }
 
-        // Sleep is a special range pair (identified by name across the codebase,
-        // e.g. ChildStatusBuilder) and must stay out of filters entirely.
-        return !in_array($eventType->name, self::HIDDEN_FROM_FILTERS_NAMES, true);
+        if (in_array($eventType->name, self::HIDDEN_FROM_FILTERS_NAMES, true)) {
+            return false;
+        }
+
+        return true;
     }
 }

@@ -21,7 +21,7 @@ final readonly class ListEventTypes
      *
      * @throws AccessDenied пользователь не связан с этим ребёнком
      */
-    public function __invoke(int $userId, int $childId): array
+    public function handle(int $userId, int $childId): array
     {
         if (!$this->childAccess->userHasAccessToChild($userId, $childId)) {
             throw AccessDenied::toChild($childId);
