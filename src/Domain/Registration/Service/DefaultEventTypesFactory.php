@@ -55,7 +55,7 @@ final readonly class DefaultEventTypesFactory
                 format: 'plain',
                 showInLastEvents: false,
                 showInQuickActions: false,
-                color: '8B4513', # todo: new color
+                color: '0F1B9F',
             ),
             new NewEventType(
                 name: 'breastfeeding_start',
@@ -63,7 +63,7 @@ final readonly class DefaultEventTypesFactory
                 format: 'range',
                 showInLastEvents: true,
                 showInQuickActions: true,
-                color: '2ecc71',
+                color: 'B87DFF',
                 end: new NewEventType(
                     name: 'breastfeeding_end',
                     keywords: null,
