@@ -61,6 +61,8 @@ services:
         alias: App\Infrastructure\Persistence\Doctrine\DoctrineCurrentUserRepository
     App\Domain\Export\Repository\ExportRepositoryInterface:
         alias: App\Infrastructure\Persistence\Doctrine\DoctrineExportRepository
+    App\Domain\Feedback\Repository\FeedbackRepositoryInterface:
+        alias: App\Infrastructure\Persistence\Doctrine\DoctrineFeedbackRepository
     App\Application\Export\Storage\ExportStorageInterface:
         alias: App\Infrastructure\Storage\S3ExportStorage
 

@@ -18,10 +18,21 @@ framework:
                         name: exports
                     queues:
                         exports: ~
+            # Publish-only queue drained by a separate service. A custom serializer
+            # emits a plain JSON body instead of Symfony's native PHP envelope.
+            feedback:
+                dsn: '%env(MESSENGER_TRANSPORT_DSN)%'
+                serializer: App\Infrastructure\Messaging\FeedbackMessageSerializer
+                options:
+                    exchange:
+                        name: feedback
+                    queues:
+                        feedback: ~
             # failed: 'doctrine://default?queue_name=failed'
 
         routing:
             App\Application\Export\Message\GenerateExport: exports
+            App\Application\Feedback\Message\FeedbackSubmitted: feedback
 
 when@test:
     framework:
@@ -29,3 +40,6 @@ when@test:
             transports:
                 # Handle synchronously in tests so no broker/worker is needed.
                 exports: 'sync://'
+                # feedback has no in-app handler, so sync:// would raise
+                # NoHandlerForMessage; in-memory:// just collects the message.
+                feedback: 'in-memory://'
