@@ -24,7 +24,7 @@ jobs:
 
             - name: Build and push
               run: |
-                  docker build -f docker/Dockerfile -t ghcr.io/vladimirgolovanov/junior-tracker-backend/junior-tracker-backend:latest .
+                  docker build --pull -f docker/Dockerfile -t ghcr.io/vladimirgolovanov/junior-tracker-backend/junior-tracker-backend:latest .
                   docker push ghcr.io/vladimirgolovanov/junior-tracker-backend/junior-tracker-backend:latest
 
     deploy:
